@@ -432,6 +432,7 @@ MIT License - 详见 [LICENSE](LICENSE) 文件
 - [Kiro Workflow 原版](https://github.com/heihuzicity-tech/ClaudeCode-Kiro-Workflow)
 - [问题反馈](https://github.com/yourusername/cc-workflow/issues)
 - [Claude Code 官方文档](https://docs.anthropic.com/en/docs/claude-code)
+ - [更新日志](./CHANGELOG.md)
 
 ---
 
