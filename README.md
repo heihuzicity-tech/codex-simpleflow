@@ -9,7 +9,7 @@
 
 **Kiro Workflow 的革命性重构 - 更简洁、更高效、更强大**
 
-[简体中文](./README.md) | [English](./docs/README_EN.md) | [评估报告](./EVALUATION_REPORT.md)
+[简体中文](./README.md)
 
 </div>
 
@@ -387,15 +387,6 @@ cp cc-workflow/.claude/CLAUDE.md ./.claude/
    - CLAUDE.md 包含所有 Kiro 功能
    - 新增标准向后兼容
 
-## 📊 评估报告
-
-完整的对比评估请查看 [EVALUATION_REPORT.md](./EVALUATION_REPORT.md)
-
-### 关键结论
-- **重构成功率**: 90% ✅
-- **功能完整性**: 100% ✅
-- **性能提升**: 48.4% ⭐
-- **维护性改善**: 显著提升 ✅
 
 ## 🤝 贡献指南
 
