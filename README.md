@@ -9,7 +9,7 @@
 
 **Kiro Workflow 的革命性重构 - 更简洁、更高效、更强大**
 
-[简体中文](./README.md)
+[简体中文](./README.md) | [English](./docs/README_EN.md) | [评估报告](./EVALUATION_REPORT.md)
 
 </div>
 
