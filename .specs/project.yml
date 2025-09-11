@@ -1,0 +1,21 @@
+# Project Information
+name: 
+description: 
+tech_stack: []
+key_dirs: []
+env:
+  database: {}
+
+flow:
+  preferences:
+    timezone: UTC
+    timestamp_format: YYYY-MM-DDThhmmssZ
+    require_slash: true
+    natural_language: true
+    retention:
+      sessions:
+        keep_open: 1
+        keep_archives: 5
+      reports:
+        keep_latest: 3
+

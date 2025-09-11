@@ -1,0 +1,15 @@
+name: cc-git
+summary: Perform Git operations with confirmations (commit/branch/tag)
+reads:
+  - .specs/current.yml
+writes:
+  - (No specs changes unless requested)
+prechecks:
+  - Show git status and pending changes
+flow:
+  - On user choice, run commit/branch/tag actions
+confirmations:
+  - All Git operations must be explicitly confirmed
+rollback:
+  - If a Git operation fails, stop and report
+

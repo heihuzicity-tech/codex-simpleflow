@@ -1,0 +1,17 @@
+name: cc-sync
+summary: Check consistency between specs and code, record report
+reads:
+  - .specs/features/{slug}/requirements.md
+  - .specs/features/{slug}/design.md
+  - .specs/features/{slug}/tasks.md
+writes:
+  - .specs/features/{slug}/sessions/{utc_id}/reports/sync-*.md
+flow:
+  - Extract contracts and anchors
+  - Scan code to verify parity
+  - Record findings with evidence snippets
+confirmations:
+  - None (read-only); fixes handled via cc-fix or manual tasks
+rollback:
+  - Not applicable
+

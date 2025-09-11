@@ -1,0 +1,15 @@
+name: cc-info
+summary: Record or update project facts (ports, deps, structure)
+reads:
+  - .specs/project.yml
+writes:
+  - .specs/project.yml
+flow:
+  - Detect facts (safe reads)
+  - Prompt for additions/edits
+  - Update project.yml under facts sections
+confirmations:
+  - Any edits to project.yml
+rollback:
+  - Atomic write with validation
+

@@ -1,0 +1,14 @@
+name: cc-config
+summary: Set or show flow preferences in project.yml
+reads:
+  - .specs/project.yml
+writes:
+  - .specs/project.yml
+flow:
+  - show | set key=value | unset key
+  - keys under flow.preferences (timestamp, retention, natural_language, require_slash)
+confirmations:
+  - Any write to project.yml
+rollback:
+  - Validate and abort on schema failure
+

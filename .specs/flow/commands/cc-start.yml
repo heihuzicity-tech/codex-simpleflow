@@ -1,0 +1,24 @@
+name: cc-start
+summary: Start a new feature session and scaffold specs
+reads:
+  - .specs/project.yml
+writes:
+  - .specs/features/{slug}/requirements.md
+  - .specs/features/{slug}/design.md
+  - .specs/features/{slug}/tasks.md
+  - .specs/features/{slug}/sessions/{utc_id}/journal.md
+  - .specs/current.yml
+  - .specs/index.yml?
+prechecks:
+  - Ensure slug (lowercase a-z0-9-) and uniqueness
+flow:
+  - Ask for feature goal and constraints
+  - Generate requirements/design/tasks from templates
+  - Create new session folder and initialize journal.md
+  - Update current.yml (active feature/session)
+  - Update index.yml (last activity)
+confirmations:
+  - Confirm generated requirements/design/tasks before writing
+rollback:
+  - Atomic writes; abort on validation failure
+

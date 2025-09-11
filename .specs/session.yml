@@ -1,0 +1,10 @@
+feature: null
+stage: Uninitialized
+current_task_id: null
+branch: null
+progress:
+  completed: 0
+  total: 0
+  percent: 0
+next_action: null
+updated_at: null

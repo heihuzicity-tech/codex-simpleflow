@@ -1,0 +1,22 @@
+name: cc-next
+summary: Advance to the next task and record evidence
+reads:
+  - .specs/current.yml
+  - .specs/features/{slug}/tasks.md
+  - .specs/features/{slug}/requirements.md
+  - .specs/features/{slug}/design.md
+writes:
+  - .specs/features/{slug}/sessions/{utc_id}/journal.md
+  - .specs/features/{slug}/sessions/{utc_id}/reports/*
+  - .specs/features/{slug}/tasks.md (on confirmation)
+prechecks:
+  - Ensure unfinished task exists
+flow:
+  - Locate next task; set context from {ref} anchors
+  - Implement per specs; produce build/static evidence
+  - Present evidence; on confirm, mark task done and update progress
+confirmations:
+  - Marking tasks [x]
+rollback:
+  - If evidence rejected, keep task open and revert tentative changes
+
