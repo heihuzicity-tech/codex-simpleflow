@@ -1,55 +1,60 @@
-# 新会话提示词（Session Primer）
+# 新会话提示词（Session Primer，聚焦工作流细节）
 
-项目：codex-simpleflow（Codex CLI 轻量可追溯工作流）
+用于下次唤起会话时，快速加载项目约束、目录语义与命令行为，避免跑偏。
 
-## 当前目标
-完成 flow 基线迁移后的“文档与发布闭环”，确保“规格—过程—证据”路径与安全闸门在示例与说明中清晰可用。
+## 角色与边界
+1) 作为 Codex CLI 工作流执行者，严格遵循仓内规则与策略，所有“事实/会话/证据”以 `.specs/` 为准，所有“执行基线/控制面”在 `.codex/flow/`。
+2) 只能通过 `/cc-*` 命令推进；除非获得确认，不得越权（写入、脚本、环境）。
 
-## 已完成（上次会话）
-- 目录迁移：将 flow 从 `.specs/flow/` 彻底迁至 `.codex/flow/`（policies、commands、templates、tools）。
-- 命令地位：`/cc-fix`、`/cc-analyze`、`/cc-think` 升级为正式命令。
-- 文档更新：
-  - `README.md`（中文）：简介/闭环/Quick Start/安全与验证/最新结构/命令表/偏好/恢复/安装/FAQ/作者。
-  - `README_EN.md`（英文）：与中文同步的结构与内容。
-  - `AGENTS.md`（英文规则）：引用 `.codex/flow`；英文化原有适配内容；补充脚本与环境纪律。
-  - `CHANGELOG.md`：新增 v2.1.0 记录；Unreleased 置为待定。
-  - `docs/RELEASE_NOTES_v2.1.0.md`：发布说明。
-- 版本与推送：已提交并推送 main；创建并推送 tag `v2.1.0`。
-- 忽略项：`.gitignore` 已忽略 `.claude/`。
-- 安全闸门：文档明确禁用 `*.ps1/*.bat`、开始前 DB 备份提示、受控 Git、结束一致性校验与归档、可选自动 smoke。
+## 目录语义
+1) `.specs/`（事实库）
+   - `project.yml`：`flow.preferences` + `flow.current` 指针。
+   - `features/<feature>/`：`requirements.md / design.md / tasks.md / summary.md / sessions/<UTC_ID>/{journal.md,reports/}`。
+   - `archives/`：`/cc-end` 打包的会话归档 zip。
+2) `.codex/flow/`（控制面）
+   - `policies.md`：工作流策略与约束。
+   - `commands/*.yml`：正式命令规范（start/next/load/sync/end/git/info/config/archive/server/fix/analyze/think）。
+   - `templates/*`：三文档与 journal 模板；`/cc-start` 来源。
+   - `tools/*`：守卫与安静执行脚本。
 
-## 重点位置
-- 事实库：`.specs/`（`project.yml`、`features/*`、`sessions/*`、`archives/`）。
-- 基线控制面：`.codex/flow/`（`policies.md`、`commands/*.yml`、`templates/*`、`tools/*`）。
-- 规则：`AGENTS.md`（英文，含命令触发/最小读取/确认闸门/脚本与环境纪律）。
-- 说明：`README.md`（中文）与 `README_EN.md`（英文）。
-- 版本记录：`CHANGELOG.md`（已含 v2.1.0）。
-- 发布说明：`docs/RELEASE_NOTES_v2.1.0.md`。
+## 安全闸门（必须执行/确认）
+1) 脚本守卫：执行前调用 `guard-no-win-scripts.sh`，发现 `*.ps1/*.bat` 立即失败。
+2) 最小读取：`/cc-next` 仅按任务 `{ref}` 读取相关片段；`/cc-sync` 才可全量扫描。
+3) 写入纪律：一律 `apply_patch` 原子落盘；YAML/Markdown 需校验通过。
+4) 确认闸门：勾任务、改动 requirements/design、Git 操作、破坏性清理、跳过 DB 备份等，均需显式确认。
+5) 环境约束：尊重项目既有 env（.env/.env.* 或脚本管理）；不得擅自修改 PORT/工作目录/日志路径。
 
-## 下一步建议（按优先级）
-1) 创建 GitHub Release（基于 tag `v2.1.0`）。
-   - 标题：`codex-simpleflow v2.1.0`。
-   - 正文：复制 `docs/RELEASE_NOTES_v2.1.0.md` 内容。
-2) 文档细化（可选）。
-   - 在 README 增加“示例特性 quick demo”（`/cc-start demo → /cc-next → /cc-sync → /cc-end`）截图/动图，提高可读性。
-   - 在 `policies.md` 再补一张目录示意图（`.specs` 仅存事实与证据、`.codex/flow` 为控制面）。
-3) 生态细节（可选）。
-   - 在 GitHub 设置 topics：`codex-cli`, `workflow`, `traceability`, `specs`, `evidence`, `safety-gates`。
-   - 在仓库首页 Description 填写：Codex CLI 轻量可追溯工作流：规格—过程—证据统一于 `.specs`，会话留痕；`/cc-*` 驱动开始→推进→校验/修复→收尾；flow 基线在 `.codex/flow`，内置安全闸门与可审计证据。
+## 命令行为要点
+1) `/cc-start <feature>`：
+   - 生成三文档 + `sessions/<UTC_ID>/journal.md`；更新 `flow.current`。
+   - 若检测到 DB 迹象，先提示备份；建议在干净工作区并通过 `/cc-git` 建立 `feature/<slug>` 分支（需确认）。
+2) `/cc-next <feature> [--sid]`：
+   - 读取 `tasks.md` 的下一条未完成任务；按 `{ref}` 抽取上下文；实施并把长日志/构建输出写入会话 `reports/`。
+   - `testing.auto_smoke=true` 时尝试 smoke（构建/探测）。
+   - 仅在确认后勾选任务并更新进度。
+3) `/cc-sync <feature> [--sid]`：
+   - 只读一致性检查（requirements/design/tasks ↔ 代码证据），输出 `reports/sync-*.md`；不自动改文档。
+4) `/cc-end <feature> [--sid]`：
+   - 校验任务完成 + 设计一致性通过 → 打包会话到 `.specs/archives/`；可提示清理（需确认）。
+5) `/cc-fix <slug>`：
+   - standalone：创建 `features/fix-<slug>/` 与会话并更新指针；
+   - scoped：向目标特性追加“修复任务”（需确认）。
+6) `/cc-analyze`：
+   - 只读分析目标路径/特性，写入会话报告；不改 specs。
+7) `/cc-think`：
+   - 产出实施前提案；在确认下写入 specs 或导出补丁，否则仅保留报告。
 
-## 校验清单（建议）
-- 在 GitHub 渲染检查 README（中/英）是否正常（中文编码、表格、目录树）。
-- 全仓搜索确认不再残留 `".specs/flow/"` 文案（当前已替换；再次检查以防遗漏）。
+## 会话与证据
+1) 时间线：`journal.md` 记录 WIP/DONE；`/cc-load` 通过尾部标记或 `tasks.md` 首条“未勾选”推断下一步。
+2) 证据：所有构建日志、比对报告、修复说明等落在 `sessions/<UTC_ID>/reports/`，对话仅给结论与路径。
 
-## 快速命令备忘
-- 恢复上下文：`/cc-load`
-- 推进任务：`/cc-next <feature> [--sid <UTC_ID>]`
-- 一致性检查：`/cc-sync <feature> [--sid <UTC_ID>]`
-- 收尾归档：`/cc-end <feature> [--sid <UTC_ID>]`
-- Git（受控）：`/cc-git`
+## 执行顺序（建议）
+1) `/cc-start <feature>` → `/cc-next <feature>`（可多次）→ `/cc-sync <feature>`（必要时循环修复）→ `/cc-end <feature>`。
+2) 任意时刻可用 `/cc-load` 只读恢复上下文，不写文件。
+3) Git 操作统一通过 `/cc-git` 并需确认。
 
-## 完成标准（本阶段）
-- GitHub Releases 中已创建 `v2.1.0`，说明与 README/CHANGELOG 一致。
-- README（CN/EN）首屏即可理解“为何/如何/安全门/目录结构/命令表”。
-- 新用户可按 README Quick Start 成功执行 `/cc-start` 与 `/cc-next`（不需额外上下文）。
+## 快速校验清单
+1) `.specs/` 与 `.codex/flow/` 目录语义一致；无残留 `.specs/flow/` 引用。
+2) `journal.md` 与 `reports/` 正在被使用（推进后有新增证据）。
+3) README（中文）能让新用户 1 分钟跑通 Quick Start。
 
