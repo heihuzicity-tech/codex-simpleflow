@@ -60,4 +60,6 @@ coverage.xml
 
 # OS
 .DS_Store
-Thumbs.db
+Thumbs.db# discourage Windows script types
+*.ps1
+*.bat

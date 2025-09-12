@@ -12,10 +12,26 @@ flow:
     timestamp_format: YYYY-MM-DDThhmmssZ
     require_slash: true
     natural_language: true
+    display:
+      quiet: true
+      style: narrative      # concise | narrative
+      max_bullets: 0        # 每节最多要点数（0 表示禁用）
+      headers: none         # minimal | none
+      show_preamble: false  # 隐藏冗长执行前言
+      icons: false          # 关闭图标/emoji
+    execution:
+      show_stdout: on-failure
+      capture_logs: to-session-reports
+    testing:
+      auto_smoke: true
     retention:
       sessions:
         keep_open: 1
         keep_archives: 5
       reports:
         keep_latest: 3
-
+flow:
+  current:
+    feature: null
+    session_id: null
+    stage: Uninitialized

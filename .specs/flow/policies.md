@@ -24,6 +24,26 @@ This repository uses a feature‑centric specs layout under `.specs/`.
 ## Checkpoints & Reports
 - Replace many scattered checkpoints with a single per‑session `journal.md`.
 - Put all session reports under the session folder; archive at `/cc-end`.
+- Global reports (`.specs/reports/`) keep only cross‑feature or final summaries (e.g., `end-*.md`, workflow decisions/analysis). All task‑level logs belong to the session `reports/` directory.
+
+## Output Style (Quiet by Default)
+- Conversation output is concise: conclusion → evidence path → next step.
+- Long stdout/stderr is captured to the current session `reports/` and not printed inline.
+- On failure, show the last ~50 lines and the full report path.
+- Controlled by preferences:
+  - `display.quiet: true`
+  - `display.style: concise|narrative` (default: concise)
+  - `display.max_bullets: 4` (limit bullets per section)
+  - `display.headers: minimal|none` (default: minimal)
+  - `display.show_preamble: false` (suppress verbose run-up)
+  - `display.icons: false` (no emoji/icons)
+  - `execution.show_stdout: on-failure`
+  - `execution.capture_logs: to-session-reports`
+
+## Auto Testing
+- `/cc-next` runs smoke checks after implementation when applicable (e.g., build + preview ping for front‑end).
+- `/cc-end` aggregates a final verification and writes an end report.
+- Controlled by preferences: `testing.auto_smoke: true`.
 
 ## Write Discipline
 - All file writes go through atomic patches (apply_patch).
@@ -32,3 +52,6 @@ This repository uses a feature‑centric specs layout under `.specs/`.
 ## Confirmations
 - Always confirm: marking tasks done, changing requirements/design, service operations, destructive cleanups, and Git actions.
 
+## Script Types Policy
+- Prohibited: generating or committing Windows shell scripts (`*.ps1`, `*.bat`). Cross‑platform tools must use Bash (`*.sh`) or platform‑neutral languages.
+- Guards: commands should run the `guard-no-win-scripts.sh` check during prechecks and fail fast when such files appear.

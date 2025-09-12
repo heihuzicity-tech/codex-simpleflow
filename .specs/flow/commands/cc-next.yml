@@ -11,12 +11,14 @@ writes:
   - .specs/features/{slug}/tasks.md (on confirmation)
 prechecks:
   - Ensure unfinished task exists
+  - No Windows script files (*.ps1, *.bat) present (guard-no-win-scripts.sh)
 flow:
   - Locate next task; set context from {ref} anchors
   - Implement per specs; produce build/static evidence
+  - If preferences.testing.auto_smoke=true, run smoke tests (build + preview ping for FE)
+  - Capture all logs to session reports; print concise summary only (quiet mode)
   - Present evidence; on confirm, mark task done and update progress
 confirmations:
   - Marking tasks [x]
 rollback:
   - If evidence rejected, keep task open and revert tentative changes
-

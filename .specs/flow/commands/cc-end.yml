@@ -12,13 +12,15 @@ writes:
   - .specs/features/{slug}/sessions/{utc_id}/journal.md (append closing)
 prechecks:
   - All tasks completed; design parity check passes
+  - No Windows script files (*.ps1, *.bat) present (guard-no-win-scripts.sh)
 flow:
   - Validate completion and parity
   - Generate summary with metrics
   - Zip current session; rotate per retention
+  - Aggregate verification results; write an end report under `.specs/reports/`
+  - Only print concise summary to conversation (quiet mode); full logs stay in session `reports/`
   - Update index and clear current pointer
 confirmations:
   - Archive and cleanup actions
 rollback:
   - If validation fails, stop and report gaps
-
