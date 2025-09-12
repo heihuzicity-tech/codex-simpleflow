@@ -63,3 +63,6 @@ coverage.xml
 Thumbs.db# discourage Windows script types
 *.ps1
 *.bat
+
+# Legacy Claude workflow docs (ignore)
+.claude/

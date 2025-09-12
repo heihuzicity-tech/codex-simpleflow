@@ -14,3 +14,4 @@ confirmations:
   - Deletion of original session directories
 rollback:
   - Do not delete sources if zip failed
+

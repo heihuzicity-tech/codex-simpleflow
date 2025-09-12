@@ -15,3 +15,4 @@ confirmations:
   - Starting/stopping external processes; killing ports when --force
 rollback:
   - Stop new process if post‑checks fail; restore previous state file
+

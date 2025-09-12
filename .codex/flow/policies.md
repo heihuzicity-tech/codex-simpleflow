@@ -1,14 +1,13 @@
 # Flow Policies (Baseline)
 
-This repository uses a feature‑centric specs layout under `.specs/`.
+This repository uses a feature‑centric specs layout under `.specs/` and places the workflow baseline under `.codex/flow/`.
 
 ## Directories
 - `.specs/features/<slug>/` holds all specs for a feature (requirements, design, tasks, summary).
 - `.specs/features/<slug>/sessions/<UTC_ID>/` contains per‑session timeline `journal.md` and session reports/artifacts.
-- `.specs/runtime/` stores runtime state (e.g., `serve.json`).
 - `.specs/archives/` stores zipped session archives `<slug>_<UTC_ID>.zip`.
 - Active pointer lives in `.specs/project.yml` under `flow.current` (feature + session id).
-- `.specs/index.yml` is an optional global index.
+- Workflow baseline lives in `.codex/flow/` (policies, commands, templates, tools).
 
 ## Naming & Encoding
 - Feature directory names are English slugs: lowercase, `[a-z0-9-]`, length ≤ 40, globally unique.
@@ -16,16 +15,21 @@ This repository uses a feature‑centric specs layout under `.specs/`.
 - All files use UTF‑8 without BOM.
 
 ## Commands (overview)
-- Keep minimal user commands: `/cc-start`, `/cc-next`, `/cc-end`, `/cc-sync`, `/cc-git`, `/cc-info`.
-- Keep `/cc-server` (aka `/cc-serve`) and `/cc-archive` for service control and manual archiving.
-- Provide `/cc-load` to resume the latest session context: read `project.yml.flow.current` or fallback to the most recent session across features (read-only).
-- `/cc-config` is a thin preferences writer (writes `.specs/project.yml` → `flow.preferences`).
-- `/cc-next` also accepts natural language equivalents (e.g., 继续/确认/下一个) with the same flow.
+- Formal commands: `/cc-start`, `/cc-next`, `/cc-load`, `/cc-sync`, `/cc-end`, `/cc-git`, `/cc-info`, `/cc-config`, `/cc-archive`, `/cc-server`, `/cc-fix`, `/cc-analyze`, `/cc-think`.
+
+### Command policies
+- `/cc-fix`: Fix workflow. Default to standalone fix features under `.specs/features/fix-<slug>/`. Scoped mode may append a fix task to an existing feature `tasks.md` on confirmation.
+- `/cc-analyze`: Read‑only analysis. Generates session reports; does not modify specs.
+- `/cc-think`: Proposal‑first. Writes a proposal report; any specs edits require explicit confirmation (or produce a patch for later application).
 
 ## Reports
 - Use a single per‑session `journal.md` to record the timeline.
 - Put all evidence and logs under the session `reports/`; archive at `/cc-end`.
 - No global `.specs/reports/` directory; cross‑feature notes belong to regular docs (e.g., `AGENTS.md`/policies) or the active session.
+
+### Fix feature location
+- Bug‑fix features use `.specs/features/fix-<slug>/` (lowercase, `[a-z0-9-]`).
+- When a fix is tightly coupled with an existing feature, prefer adding a scoped fix task to that feature’s `tasks.md` instead of creating a new fix feature.
 
 ## Output Style (Quiet by Default)
 - Conversation output is concise: conclusion → evidence path → next step.
@@ -36,8 +40,8 @@ This repository uses a feature‑centric specs layout under `.specs/`.
   - `display.style: concise|narrative` (default: concise)
   - `display.max_bullets: 4` (limit bullets per section)
   - `display.headers: minimal|none` (default: minimal)
-  - `display.show_preamble: false` (suppress verbose run-up)
-  - `display.icons: false` (no emoji/icons)
+  - `display.show_preamble: false`
+  - `display.icons: false`
   - `execution.show_stdout: on-failure`
   - `execution.capture_logs: to-session-reports`
 

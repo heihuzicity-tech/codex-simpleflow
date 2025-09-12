@@ -1,0 +1,30 @@
+name: cc-analyze
+summary: Read-only project/code analysis; generate structured report and suggestions
+reads:
+  - .specs/project.yml
+  - .specs/features/{feature}/requirements.md?
+  - .specs/features/{feature}/design.md?
+  - .specs/features/{feature}/tasks.md?
+  - <target code paths> (exclude: .git, node_modules, dist, build, .venv, .pnpm-store)
+writes:
+  - .specs/features/{feature}/sessions/{utc_id}/reports/analyze-<target>-<ts>.md
+prechecks:
+  - None (read-only)
+parameters:
+  - target: feature name or path to analyze (required)
+  - depth: light|full (default: light)
+  - include: optional glob(s)
+  - exclude: optional glob(s)
+  - sid: optional session id to attach report
+flow:
+  - Detect tech stack and tooling (language, package manager, frameworks)
+  - Map entry points, APIs, scripts, and data flows
+  - Estimate complexity (size, deps, coupling signals) and identify hotspots
+  - Cross-check with specs (anchors/contracts) to spot gaps and risks
+  - Produce suggestions: approach, priority areas, proposed sub-tasks, and expert profile
+  - Save full report to session reports; conversation prints concise pointer only
+confirmations:
+  - None (no specs edits)
+rollback:
+  - Not applicable (no writes to specs)
+

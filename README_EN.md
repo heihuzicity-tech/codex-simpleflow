@@ -1,98 +1,133 @@
-# codex-simpleflow
+# codex-simpleflow (Lightweight, Traceable Workflow for Codex CLI)
 
-A lightweight, traceable workflow for Codex CLI. Specs, sessions and evidence live under `.specs/`. The `/cc-*` commands form a simple loop: start → next → sync/fix → end; `/cc-load` resumes progress anytime.
+Chinese version: README.md
 
-Chinese version: [README.md](README.md)
+codex-simpleflow is a lightweight workflow baseline for Codex CLI. Specs, process, and evidence live together under `.specs/`. A small set of `/cc-*` commands completes the loop: Start → Next → Sync/Fix → End, and `/cc-load` resumes context anytime in read‑only mode. Goals: ready‑to‑use, minimal constraints, replayable, and auditable.
 
 ## Why codex-simpleflow
-- Single source of truth: everything under `.specs/`.
-- Session as evidence: `sessions/<UTC_ID>/{journal.md,reports/}`; `/cc-end` archives it.
-- One‑command resume: `/cc-load` reads `project.yml.flow.current`, falls back to latest session (read‑only).
-- Anchor‑driven tasks: `{ref}` → `[@req.*]` / `[@des.*]` keeps context clear.
-- Quiet output: long logs go to session `reports/`; conversation shows conclusions.
-- Atomic + confirmations: all writes via patches; important actions require confirmation.
+- Single source of truth: state, specs, sessions, and evidence unify under `.specs/`.
+- Session as evidence: `sessions/<UTC_ID>/{journal.md,reports/}` with `/cc-end` archiving.
+- One‑command resume: `/cc-load` prefers `project.yml.flow.current`.
+- Minimal reads: task execution reads only `{ref}` anchors; full parity checks via `/cc-sync`.
+- Quiet output: long logs go to session `reports/`; conversations show conclusions + paths.
+- Atomic + confirmations: all writes are patches; task checks, spec edits, Git, and archiving require confirmation.
 
-## Workflow loop
+## Workflow Loop
 ```
-cc-start → cc-next ↔ (cc-sync / cc-fix) → cc-end
-            ↑
-          cc-load (resume anytime)
-```
-
-## Directory (on demand)
-```
-codex-simpleflow/
-├─ AGENTS.md                      # Conversation rules & how to run commands
-├─ README.md                      # Chinese docs
-├─ README_EN.md                   # English docs
-├─ CHANGELOG.md                   # Changes
-└─ .specs/                        # Workflow data
-   ├─ project.yml                 # Global prefs; flow.current = last session pointer
-   ├─ archives/                   # Session archives
-   ├─ features/
-   │  └─ <feature>/
-   │     ├─ requirements.md       # Requirements
-   │     ├─ design.md             # Design
-   │     ├─ tasks.md              # Tasks (with {ref})
-   │     ├─ summary.md            # Summary
-   │     └─ sessions/
-   │        └─ <UTC_ID>/
-   │           ├─ journal.md      # Timeline (WIP/DONE marks)
-   │           └─ reports/        # Evidence & logs
-   └─ flow/
-      ├─ policies.md              # Policies
-      ├─ commands/                # /cc-* command specs
-      ├─ templates/               # Spec templates
-      └─ tools/quiet.sh           # Optional quiet helper
+cc-start -> cc-next -> (cc-sync | cc-fix) -> cc-end
+             \->        cc-load (resume anytime)
 ```
 
-## Quick start
+## Quick Start
+- Initialize: `/cc-start <feature>` (creates three docs + `journal.md`, writes `flow.current`)
+- Advance: `/cc-next <feature> [--sid <UTC_ID>]` (evidence → session `reports/`; check on confirm)
+- Resume: `/cc-load` (read‑only)
+- Close: `/cc-end <feature> [--sid <UTC_ID>]` (validate and archive)
+
+## Safety Gates
+- Prechecks and guards
+  - Windows scripts forbidden: `guard-no-win-scripts.sh` fails on any `*.ps1/*.bat`.
+  - Minimal reads: execute by `{ref}` to avoid broad, risky changes.
+- Before start (/cc-start)
+  - DB backup prompt: if DB footprints are detected, back up first; “skip backup” must be explicit.
+  - Git state hint: prefer a clean working tree; create a branch via `/cc-git` (e.g., `feature/<slug>`).
+- During next (/cc-next)
+  - Read‑only → capture evidence → confirm: long logs/build outputs go to `reports/`; only after confirmation is a task checked.
+  - Optional smoke: if `testing.auto_smoke=true`, perform build/probe as a quick health check.
+- At end (/cc-end)
+  - Completion checks: tasks done + design parity must pass.
+  - One‑click archive: package the session to `.specs/archives/`; rotate per retention.
+  - Cleanup hint: optionally trigger project scripts to clean artifacts/temp files (on confirm).
+- Controlled Git (/cc-git)
+  - Commit/branch/tag all require confirmation.
+
+Example (with safety checks)
 ```
-/cc-start <feature>
-/cc-next <feature> [--sid <UTC_ID>]
-/cc-load
-/cc-end  <feature> [--sid <UTC_ID>]
+/cc-start login-api
+/cc-next  login-api
+/cc-sync  login-api
+/cc-git
+/cc-end   login-api
 ```
 
-## Install
-Use this repository as a starting point, or copy a minimal set into an existing project.
+## Project Structure
+```
+simpleflow/
+├─ AGENTS.md                    # Codex CLI adapter (triggers/tools/gates)
+├─ README.md                    # Chinese docs
+├─ README_EN.md                 # This document (EN)
+├─ CHANGELOG.md                 # Changes
+├─ .gitignore
+├─ .claude/                     # Legacy Claude docs (ignored; migration reference)
+│  └─ commands/cc-*.md
+├─ .specs/                      # Single source of truth (specs + evidence)
+│  ├─ project.yml               # Preferences + flow.current pointer
+│  ├─ archives/                 # Session archives (zip)
+│  └─ features/
+│     ├─ <feature>/
+│     │  ├─ requirements.md     # Requirements (anchors [@req.*])
+│     │  ├─ design.md           # Design (anchors [@des.*])
+│     │  ├─ tasks.md            # Tasks ({ref} -> anchors)
+│     │  ├─ summary.md          # Generated by /cc-end
+│     │  └─ sessions/<UTC_ID>/{journal.md,reports/}
+│     └─ fix-<slug>/            # Optional fix feature (same structure)
+└─ .codex/
+   └─ flow/                     # Workflow baseline (control plane)
+      ├─ policies.md            # Policies/constraints
+      ├─ commands/              # /cc-* command specs (formal)
+      ├─ templates/             # Spec templates (/cc-start sources from here)
+      └─ tools/                 # Quiet helpers/guards
+```
 
+## Commands Reference (brief)
+
+| Command | Purpose |
+| --- | --- |
+| `/cc-start <feature>` | Scaffold specs and open a session (writes `flow.current`) |
+| `/cc-next <feature> [--sid]` | Execute the next task; evidence to session `reports/`; check on confirm |
+| `/cc-load [<feature>]` | Read‑only resume (prefer `flow.current`) |
+| `/cc-sync <feature> [--sid]` | Specs–code parity check; writes `reports/sync-*.md` |
+| `/cc-end <feature> [--sid]` | Validate and archive (summary + zip; clears pointer) |
+| `/cc-git` | Controlled Git operations (commit/branch/tag with confirmation) |
+| `/cc-info` | Record project facts to `project.yml` (confirmed) |
+| `/cc-config key=value` | Set preferences in `project.yml` (confirmed) |
+| `/cc-archive [<feature>]` | Manual archive rotation |
+| `/cc-server …` | Service control/status (persists to `.specs/runtime/serve.json`) |
+| `/cc-fix <slug>` | Start fix workflow (standalone/scoped) |
+| `/cc-analyze --target <path|feature>` | Read‑only analysis; report to session `reports/` |
+| `/cc-think [--level v1|v2|v3]` | Proposal before implementation; confirm to edit specs or export patch |
+
+## Preferences & Policies
+- Preferences: `.specs/project.yml -> flow.preferences` (timezone, timestamp_format, display.quiet, testing.auto_smoke, retention...).
+- Write discipline: atomic patches; validate YAML/Markdown before writing.
+- Confirmation gates: checking tasks, editing requirements/design, service ops, destructive cleanup, Git ops.
+- Script policy: forbid `*.ps1` and `*.bat`; use Bash or platform‑neutral tools.
+
+## Restore & Consistency
+- `/cc-load`: prefer `flow.current`; otherwise pick the latest session; infer “next” via `journal.md` (WIP/DONE) or the first unchecked task.
+- `/cc-sync`: extract anchors/contracts and scan code to produce a parity report in `reports/`.
+
+## Install / Integrate
 Option A (template repo)
 ```
-git clone https://github.com/heihuzicity-tech/codex-simpleflow.git
+git clone https://github.com/<your-org>/codex-simpleflow.git
 cd codex-simpleflow
 /cc-start demo
 ```
 
-Option B (drop‑in to an existing project)
-Copy the following into your project root:
+Option B (drop‑in)
+Copy the minimum set into an existing project:
 ```
 AGENTS.md
 .specs/project.yml
-.specs/flow/   (entire directory)
+.codex/flow/   (entire directory)
 ```
-Then initialize the first session/specs:
+Initialize the first feature/session:
 ```
-/cc-start <feature-name>
-```
-Prereqs: Git and Codex CLI. For quiet.sh, Bash and curl are recommended (optional).
-
-## Recovery (/cc-load)
-- Reads `.specs/project.yml -> flow.current` if present; otherwise picks the latest session.
-- Suggests the next task by reading `journal.md` tail or the first unchecked item in `tasks.md`.
-- Read‑only: no files are written.
-
-## Sync & fix
-1) Find differences: `/cc-sync <feature> [--sid]` → `reports/sync-<ts>.md`
-2) Fix during next: `/cc-next <feature> [--sid]` → drop `reports/fix-<ts>.(md|patch|log)`
-3) Re‑sync to confirm; end when ready: `/cc-end <feature> [--sid]`
-
-## Cheatsheet
-```
-/cc-start, /cc-next, /cc-load, /cc-end, /cc-sync,
-/cc-git, /cc-info, /cc-config, /cc-archive, /cc-server
+/cc-start <feature>
 ```
 
-## Author & site
-- Author: Heihuzi (黑胡子)
-- Site: https://www.heihuzicity.com
+## Author & Site
+- Heihuzicity Low‑Tech Group（黑胡子低科技集团）
+- https://www.heihuzicity.com/
+

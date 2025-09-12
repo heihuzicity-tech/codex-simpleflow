@@ -24,3 +24,4 @@ confirmations:
   - Marking tasks [x]
 rollback:
   - If evidence rejected, keep task open and revert tentative changes
+

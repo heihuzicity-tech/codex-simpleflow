@@ -1,13 +1,14 @@
 # 更新日志
 
-本项目遵循“尽量精简、可恢复、会话内留痕”的工作流设计。重要变更记录如下。
+本项目遵循“精简、可恢复、会话留痕”的工作流设计。重要变更记录如下。
 
 ## [Unreleased]
-- 新增：`/cc-load`（只读）用于自动读取并恢复上次会话的最新进度（优先使用 `.specs/project.yml -> flow.current`）。
-- 精简结构：移除全局目录（`.specs/reports/`、`.specs/checkpoints/`、`.specs/runtime/`）、移除 `flow/schemas/*`，证据仅落在会话 `reports/`。
-- 配置合并：将 `.specs/project.yml` 的重复 `flow:` 合并为单一块，新增 `flow.current.last_task/updated_at` 字段。
-- 文档：新增 `USAGE.md`；更新 `AGENTS.md` 与 `policies.md` 以反映简化后的结构与 `/cc-load`。
-- 模板：`journal.md` 增加 `WIP/DONE` 示例，便于 `/cc-load` 识别进度。
+- 目录迁移：将 flow 从 `.specs/flow/` 彻底迁移至 `.codex/flow/`；删除旧目录；README 与 AGENTS 全量更新至新路径。
+- 命令集：`/cc-fix`、`/cc-analyze`、`/cc-think` 升级为“正式命令”，与 `/cc-start`、`/cc-next`、`/cc-load`、`/cc-sync`、`/cc-end` 并列。
+- 安全与验证：README 新增“Safety Gates”说明；执行前守卫（禁用 `*.ps1/*.bat`）、开始前 DB 备份提示、受控 Git、结束一致性校验与归档清理、可选自动 smoke。
+- 环境策略：移除对 `.env.local` 的绑定；统一为“尊重项目现有环境配置（.env/.env.*/CI/脚本环境），变更需确认”；日志/PID 路径为默认值（`logs/service.log`/`logs/service.pid`），若项目策略另有规定，以项目为准。
+- 忽略项：将 `.claude/` 加入 `.gitignore`，旧 Claude 文档仅作迁移参考。
+- 作者信息：README 添加“黑胡子低科技集团（Heihuzicity Low‑Tech Group）”与网站 `https://www.heihuzicity.com/`。
 
 ## [2.0.0] - 2025-09-11
 - 引入 `.specs/flow` 基线（policies、commands、templates）。
@@ -17,4 +18,3 @@
 ## [1.0.0] - 初始版本
 - 初始化仓库与基础工作流文档。
 
-— 完 —

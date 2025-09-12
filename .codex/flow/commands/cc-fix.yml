@@ -1,0 +1,48 @@
+name: cc-fix
+summary: Start a bug-fix workflow as a standalone fix feature or a scoped task
+reads:
+  - .specs/project.yml
+  - .specs/features/{feature}/requirements.md?
+  - .specs/features/{feature}/design.md?
+  - .specs/features/{feature}/tasks.md?
+writes:
+  # Standalone mode (recommended default)
+  - .specs/features/fix-{slug}/requirements.md
+  - .specs/features/fix-{slug}/design.md
+  - .specs/features/fix-{slug}/tasks.md
+  - .specs/features/fix-{slug}/sessions/{utc_id}/journal.md
+  - .specs/features/fix-{slug}/sessions/{utc_id}/reports/fix-*.md
+  - .specs/project.yml   # update flow.current (feature + session_id, last_task=null, updated_at=now)
+  # Scoped mode (attach a fix task to an existing feature)
+  - .specs/features/{feature}/tasks.md
+  - .specs/features/{feature}/sessions/{utc_id}/journal.md
+  - .specs/features/{feature}/sessions/{utc_id}/reports/fix-*.md
+prechecks:
+  - Run guard-no-win-scripts.sh (no *.ps1/*.bat)
+  - Validate slug (lowercase a-z0-9-) and uniqueness for standalone
+  - Optional: show git status and warn if dirty (policy-driven)
+parameters:
+  - slug: bug identifier (required for standalone)
+  - mode: standalone|scoped (default: standalone)
+  - feature: target feature when mode=scoped
+  - sid: optional session id to reuse
+flow:
+  - Collect bug context: symptoms, repro, expected vs actual, scope
+  - If standalone:
+    - Scaffold fix-{slug} from templates (requirements/design/tasks)
+    - Create new session and initialize journal.md
+    - Update project.yml.flow.current: { feature: fix-{slug}, session_id, last_task: null, updated_at: now }
+  - If scoped:
+    - Append a fix task to {feature}/tasks.md with anchors [@req.fix.*]/[@des.fix.*]
+    - Ensure an active or latest session; write a WIP entry to journal.md
+  - Write a fix report under session reports (problem, impact, plan, risk, rollback, evidence)
+  - Hand off implementation to /cc-next; verify via /cc-sync; close via /cc-end
+confirmations:
+  - Creating fix-{slug} specs (standalone) or appending tasks (scoped)
+  - Marking tasks [x]
+  - Updating flow.current (standalone)
+  - Any Git operations are performed via /cc-git and must be confirmed
+rollback:
+  - Atomic writes; abort on validation failure
+  - If evidence rejected, keep tasks open and revert tentative changes
+

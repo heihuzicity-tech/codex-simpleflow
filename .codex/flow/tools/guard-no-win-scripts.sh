@@ -16,3 +16,4 @@ if [[ ${#found[@]} -gt 0 ]]; then
 fi
 
 echo "win-script-guard: OK"
+

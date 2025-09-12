@@ -12,3 +12,4 @@ confirmations:
   - All Git operations must be explicitly confirmed
 rollback:
   - If a Git operation fails, stop and report
+

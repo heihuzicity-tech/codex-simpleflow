@@ -21,3 +21,4 @@ confirmations:
   - Confirm generated requirements/design/tasks before writing
 rollback:
   - Atomic writes; abort on validation failure
+

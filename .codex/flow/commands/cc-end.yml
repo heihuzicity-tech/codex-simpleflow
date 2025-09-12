@@ -24,3 +24,4 @@ confirmations:
   - Archive and cleanup actions
 rollback:
   - If validation fails, stop and report gaps
+

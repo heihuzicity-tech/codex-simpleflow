@@ -21,3 +21,4 @@ confirmations:
   - None (no state changes)
 rollback:
   - Not applicable (no writes)
+

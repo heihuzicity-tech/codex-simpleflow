@@ -1,34 +1,81 @@
-# CodexFlow 执行适配说明
+﻿# CodexFlow Agent Rules (AGENTS.md)
 
-本文件用于指导在 Codex CLI 环境下如何执行 `.specs/flow/` 中定义的工作流。不要在此复制或发明新规则，命令与约束以 `.specs/flow/policies.md` 与 `.specs/flow/commands/*.yml` 为唯一规范来源。
+Scope: These rules apply to the entire repository for all agent work in Codex CLI.
 
-## 适用范围
-- 作用于整个仓库；当需要使用“/cc-*”命令时，按本适配说明运行。
+## CodexFlow Adapter
+- Single source of truth: treat `.specs/` as the only runtime/state source.
+- Commands trigger: a `/cc-*` message means "run that command" (see `.codex/flow/commands/*.yml`).
+- Tools
+  - Read/detect: `shell` (read-only checks such as git status, env, logs).
+  - Write/change: `apply_patch` (atomic patches; prefer one shot, minimal diffs).
+  - Process rendering: `update_plan` (exactly one `in_progress` at a time).
+- Quick restore: `/cc-load` restores the last session context read-only (reads `.specs/project.yml -> flow.current`; if invalid, fall back to the latest session). No files are written.
+- Confirmation gates (ask before acting)
+  - Marking tasks done; changing requirements/design; skipping database backup.
+  - Applying changes suggested by `cc-sync`.
+  - Git commit/branch/tag/merge; publishing/tagging; destructive cleanups.
+- Minimal read strategy
+  - `cc-task` (if used) reads only the Progress section in `tasks.md`.
+  - `cc-next` reads only the `{ref: ...}` anchors from requirements/design relevant to the active task.
+  - `cc-sync` may read all three docs and compare with code evidence.
+- Checkpointing: record progress only in `.specs/features/<feature>/sessions/<UTC_ID>/journal.md`; do not use a global `checkpoints/`.
 
-## 执行约定
-- 命令触发：对话中输入 `/cc-*` 视为运行对应命令（见 commands）。
-- 工具使用：
-  - 读取/检测：`shell`（只读探测，如 git 状态/DB 线索）
-  - 写入/变更：`apply_patch`（原子落盘，尽量一次性写全）
-  - 过程呈现：`update_plan`（始终仅一个 in_progress）
- - 快速恢复：输入 `/cc-load` 只读恢复上次会话上下文（读取 `.specs/project.yml` 的 `flow.current`；无效则回退到最近会话），不写任何文件。
-- 确认闸门（必须先征询）：
-  - 标记任务完成、修改 requirements/design、跳过数据库备份
-  - 变更由 `cc-sync` 建议的文档状态
-  - Git 提交/分支/合并、发布/打标签
-- 最小读取策略：
-  - `cc-task` 仅读 `tasks.md` 的 Progress 段
-  - `cc-next` 仅按任务 `{ref: ...}` 读取 requirements/design 相关片段
-  - `cc-sync` 全量读取三文档并比对代码证据
-- 检查点策略：
-  - 默认仅在会话 `sessions/<UTC_ID>/journal.md` 记录过程留痕；不使用全局 `checkpoints/`
+## Single Source of Truth
+- `.specs/project.yml` (includes `flow.preferences` and `flow.current`).
+- `.specs/features/{feature}/` (requirements/design/tasks/summary).
+- `.specs/features/{feature}/sessions/{UTC_ID}/` (`journal.md` and `reports/*`).
 
-## 单一事实来源
-- 运行时状态以 `.specs/` 为唯一事实来源：
-  - `.specs/project.yml`（含 `flow.preferences` 与 `flow.current`）
-  - `.specs/features/{feature}/` 下的 requirements/design/tasks/summary
-  - `.specs/features/{feature}/sessions/{UTC_ID}/` 下的 `journal.md` 与 `reports/*`
+## References
+- Policies and constraints: `.codex/flow/policies.md`.
+- Command specs: `.codex/flow/commands/*.yml`.
 
-## 引用
-- 全局政策与约束：`.specs/flow/policies.md`
-- 命令执行手册：`.specs/flow/commands/*.yml`
+## Commands (formal)
+- `/cc-start`, `/cc-next`, `/cc-load`, `/cc-sync`, `/cc-end`.
+- `/cc-git`, `/cc-info`, `/cc-config`, `/cc-archive`, `/cc-server`.
+- `/cc-fix`: Fix workflow (default creates `.specs/features/fix-<slug>/` and a session; or append a fix task to a target feature on confirmation).
+- `/cc-analyze`: Read-only analysis (does not modify specs); report is written to the active session `reports/`.
+- `/cc-think`: Proposal before implementation (spec edits require confirmation; may output a patch instead).
+
+---
+
+## Operational Discipline (Shell & Scripts)
+- Single command per step: run exactly one command at a time. Do not chain with `;`, `&&`, or `||`.
+- Use project scripts only: when `./server.sh` exists and exposes `start|stop|status|restart|build|clean`, use it exclusively for service operations. Do not bypass with `nohup`, framework dev servers, or background `&`.
+- No external backgrounding: never start background processes outside provided scripts.
+- Process control via script: do not manually kill PIDs or free ports; use `./server.sh`.
+- Logs/PID location (default): write logs to `logs/service.log` and PID to `logs/service.pid` (paths relative to the repository root). If the project's scripts or policies specify different paths, follow those. Do not relocate arbitrarily without explicit approval.
+- Sequential flow: wait for each command to complete and report before running the next.
+- Script edits need approval: propose changes via patch and obtain user confirmation before modifying `./server.sh` or related scripts.
+- Environment invariants: do not implicitly change `PORT`, working directory, or log paths; configure only via approved scripts or with explicit approval.
+
+## Service Management (if `./server.sh` is present)
+- Start: `./server.sh start`
+- Stop: `./server.sh stop`
+- Status: `./server.sh status`
+- Restart: `./server.sh restart`
+- Build: `./server.sh build`
+- Clean: `./server.sh clean`
+
+After `start`/`restart`, always run `./server.sh status` to verify health before further steps.
+
+## Network and Environment
+- Respect the project's existing environment configuration (e.g., `.env`, `.env.*`, CI env, or script-managed env). Do not add/modify env vars without approval.
+- Avoid installing packages unless explicitly required to fix a concrete error and approved by the user.
+
+## Editing and Commits
+- Use focused patches; do not change unrelated files.
+- Follow existing code style and structure; prefer minimal diffs.
+- Document behavior-affecting changes in the PR/summary to the user.
+
+## Approval and Change Control
+1) Analyze first: before modifying code/scripts, identify root cause, scope, risks; propose concrete changes and a test plan.
+2) Explicit approval required: do not apply patches or run fix commands until the user approves.
+3) Scoped execution: once approved, implement only the approved scope; if new findings arise, pause and request updated approval.
+4) Verification: after implementation, validate with the agreed test plan and report results succinctly.
+
+## Output Formatting Rules
+1) Do not use hyphen-style bullet lists in replies.
+2) Prefer numbered lists or short paragraphs; use section titles only when they help clarity.
+3) Keep responses concise and task-focused; include commands and paths in backticks when needed.
+4) Avoid heavy formatting; no nested lists; keep structure simple and readable.
+
