@@ -1,8 +1,7 @@
 name: cc-server
 summary: Start/stop/restart/status for services; record runtime state
 reads:
-  - .specs/project.yml
-  - .specs/current.yml?
+  - .specs/project.yml   # read flow.current when feature unspecified
 writes:
   - .specs/runtime/serve.json
   - .specs/features/{slug}/sessions/{utc_id}/reports/server-*.log?
@@ -16,4 +15,3 @@ confirmations:
   - Starting/stopping external processes; killing ports when --force
 rollback:
   - Stop new process if post‑checks fail; restore previous state file
-

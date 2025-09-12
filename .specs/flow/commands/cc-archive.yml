@@ -7,11 +7,10 @@ writes:
   - .specs/archives/{slug}_{utc_id}.zip
   - .specs/features/{slug}/ (rotate sessions)
 flow:
-  - If feature not specified, use current
+  - If feature not specified, use project.yml.flow.current
   - Zip older sessions; delete original dirs after success
   - Enforce retention (keep_open, keep_archives)
 confirmations:
   - Deletion of original session directories
 rollback:
   - Do not delete sources if zip failed
-

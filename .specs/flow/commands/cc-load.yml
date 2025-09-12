@@ -1,0 +1,23 @@
+name: cc-load
+summary: Read-only restore of the latest session context for the active feature
+reads:
+  - .specs/project.yml                  # flow.current: feature + session_id (+ optional last_task)
+  - .specs/features/*/sessions/*/journal.md
+  - .specs/features/*/tasks.md
+writes:
+  - None (read-only)
+prechecks:
+  - None (gracefully degrade when pointer is absent/invalid)
+flow:
+  - If <slug> specified, pick its latest session (by largest `<UTC_ID>` under `sessions/`)
+  - Else if `project.yml.flow.current` is set, use that <feature>/<UTC_ID>
+  - Else scan `.specs/features/*/sessions/*` to select the most recent session across all features
+  - Read the tail of `journal.md` to find the last WIP/DONE marker (e.g., `WIP task <N> {ref: ...}`)
+  - If no WIP marker found, inspect `tasks.md` and suggest the first unchecked task with its {ref}
+  - Print a concise summary: `resumed <feature>@<UTC_ID>; next=<N>|unknown; last=<report?>`
+parameters:
+  - slug: optional feature name to force selection
+confirmations:
+  - None (no state changes)
+rollback:
+  - Not applicable (no writes)

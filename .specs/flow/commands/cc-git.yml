@@ -1,7 +1,7 @@
 name: cc-git
 summary: Perform Git operations with confirmations (commit/branch/tag)
 reads:
-  - .specs/current.yml
+  - .specs/project.yml   # read flow.current
 writes:
   - (No specs changes unless requested)
 prechecks:
@@ -12,4 +12,3 @@ confirmations:
   - All Git operations must be explicitly confirmed
 rollback:
   - If a Git operation fails, stop and report
-

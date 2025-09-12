@@ -7,7 +7,7 @@ This repository uses a feature‑centric specs layout under `.specs/`.
 - `.specs/features/<slug>/sessions/<UTC_ID>/` contains per‑session timeline `journal.md` and session reports/artifacts.
 - `.specs/runtime/` stores runtime state (e.g., `serve.json`).
 - `.specs/archives/` stores zipped session archives `<slug>_<UTC_ID>.zip`.
-- `.specs/current.yml` is the active pointer (feature + session id).
+- Active pointer lives in `.specs/project.yml` under `flow.current` (feature + session id).
 - `.specs/index.yml` is an optional global index.
 
 ## Naming & Encoding
@@ -18,13 +18,14 @@ This repository uses a feature‑centric specs layout under `.specs/`.
 ## Commands (overview)
 - Keep minimal user commands: `/cc-start`, `/cc-next`, `/cc-end`, `/cc-sync`, `/cc-git`, `/cc-info`.
 - Keep `/cc-server` (aka `/cc-serve`) and `/cc-archive` for service control and manual archiving.
+- Provide `/cc-load` to resume the latest session context: read `project.yml.flow.current` or fallback to the most recent session across features (read-only).
 - `/cc-config` is a thin preferences writer (writes `.specs/project.yml` → `flow.preferences`).
 - `/cc-next` also accepts natural language equivalents (e.g., 继续/确认/下一个) with the same flow.
 
-## Checkpoints & Reports
-- Replace many scattered checkpoints with a single per‑session `journal.md`.
-- Put all session reports under the session folder; archive at `/cc-end`.
-- Global reports (`.specs/reports/`) keep only cross‑feature or final summaries (e.g., `end-*.md`, workflow decisions/analysis). All task‑level logs belong to the session `reports/` directory.
+## Reports
+- Use a single per‑session `journal.md` to record the timeline.
+- Put all evidence and logs under the session `reports/`; archive at `/cc-end`.
+- No global `.specs/reports/` directory; cross‑feature notes belong to regular docs (e.g., `AGENTS.md`/policies) or the active session.
 
 ## Output Style (Quiet by Default)
 - Conversation output is concise: conclusion → evidence path → next step.

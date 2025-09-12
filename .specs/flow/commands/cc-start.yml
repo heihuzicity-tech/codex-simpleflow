@@ -7,7 +7,7 @@ writes:
   - .specs/features/{slug}/design.md
   - .specs/features/{slug}/tasks.md
   - .specs/features/{slug}/sessions/{utc_id}/journal.md
-  - .specs/current.yml
+  - .specs/project.yml   # update flow.current (feature + session_id, last_task=null, updated_at=now)
   - .specs/index.yml?
 prechecks:
   - Ensure slug (lowercase a-z0-9-) and uniqueness
@@ -15,10 +15,9 @@ flow:
   - Ask for feature goal and constraints
   - Generate requirements/design/tasks from templates
   - Create new session folder and initialize journal.md
-  - Update current.yml (active feature/session)
+  - Update project.yml.flow.current: { feature, session_id, last_task: null, updated_at: now }
   - Update index.yml (last activity)
 confirmations:
   - Confirm generated requirements/design/tasks before writing
 rollback:
   - Atomic writes; abort on validation failure
-

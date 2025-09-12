@@ -1,7 +1,7 @@
 name: cc-next
 summary: Advance to the next task and record evidence
 reads:
-  - .specs/current.yml
+  - .specs/project.yml    # read flow.current
   - .specs/features/{slug}/tasks.md
   - .specs/features/{slug}/requirements.md
   - .specs/features/{slug}/design.md
@@ -9,15 +9,17 @@ writes:
   - .specs/features/{slug}/sessions/{utc_id}/journal.md
   - .specs/features/{slug}/sessions/{utc_id}/reports/*
   - .specs/features/{slug}/tasks.md (on confirmation)
+  - .specs/project.yml (optional: refresh flow.current.updated_at, last_task)
 prechecks:
   - Ensure unfinished task exists
   - No Windows script files (*.ps1, *.bat) present (guard-no-win-scripts.sh)
 flow:
-  - Locate next task; set context from {ref} anchors
+  - Locate next task; determine active feature via project.yml.flow.current; set context from {ref} anchors
   - Implement per specs; produce build/static evidence
   - If preferences.testing.auto_smoke=true, run smoke tests (build + preview ping for FE)
   - Capture all logs to session reports; print concise summary only (quiet mode)
   - Present evidence; on confirm, mark task done and update progress
+  - Optionally refresh `project.yml.flow.current` with `updated_at` and current `last_task`
 confirmations:
   - Marking tasks [x]
 rollback:

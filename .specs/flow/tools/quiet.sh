@@ -20,6 +20,41 @@ ensure_reports_dir() {
   printf '%s' "$dir"
 }
 
+# Read active slug from .specs/project.yml -> flow.current.feature (best-effort, no PyYAML)
+read_current_slug() {
+  local yml=".specs/project.yml"; [[ -f "$yml" ]] || return 0
+  awk '
+    BEGIN{in=0}
+    /^[ \t]*#/ {next}
+    /^[^ \t]/ { sect=$1; }
+    /[\s]*current:/ { in=1; next }
+    in && /[\s]*feature:/ {
+      sub(/.*feature:[ \t]*/,"",$0); gsub(/[\r\n]/,"",$0); gsub(/"/,"",$0); print $0; exit
+    }
+  ' "$yml" | tr -d '\r' | sed 's/^null$//; s/^[ \t]*//; s/[ \t]*$//'
+}
+
+# Try to find a port from runtime state (first port if unspecified)
+read_runtime_port() {
+  local slug_filter="${1:-}" json=".specs/runtime/serve.json"; [[ -f "$json" ]] || return 0
+  # If there is a single numeric port, use the first one
+  local p
+  if [[ -n "$slug_filter" ]]; then
+    # naive proximity search: take the first port near the slug mention
+    p=$(awk -v s="$slug_filter" '
+      BEGIN{port=""}
+      index($0,s){ seen=NR }
+      /"port"[ \t]*:/ && (seen>0) && (NR-seen<10) {
+        sub(/.*"port"[ \t]*:[ \t]*/,"",$0); sub(/[^0-9].*$/,"",$0); print $0; exit
+      }
+    ' "$json" | head -n1)
+  fi
+  if [[ -z "${p:-}" ]]; then
+    p=$(sed -n 's/.*"port"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p' "$json" | head -n1)
+  fi
+  [[ -n "${p:-}" ]] && printf '%s' "$p"
+}
+
 port_listen() {
   local port="$1"
   if command -v ss >/dev/null 2>&1; then
@@ -89,7 +124,7 @@ usage() {
 }
 
 cmd="${1:-}"; shift || true
-slug="simple-login"; port=4173
+slug=""; port=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --slug) slug="$2"; shift 2;;
@@ -98,10 +133,19 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+if [[ -z "${slug:-}" ]]; then
+  slug="$(read_current_slug || true)"
+fi
+if [[ -z "${slug:-}" ]]; then slug="unknown"; fi
+
+if [[ -z "${port:-}" ]]; then
+  port="$(read_runtime_port "$slug" || true)"
+fi
+if [[ -z "${port:-}" ]]; then port=4173; fi
+
 case "$cmd" in
   smoke)        smoke "$slug" "$port" ;;
   serve-status) serve_status "$port" ;;
   serve-stop)   serve_stop "$port" ;;
   *) usage; exit 1;;
 esac
-

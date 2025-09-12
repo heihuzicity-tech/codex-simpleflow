@@ -1,7 +1,7 @@
 name: cc-end
 summary: Close the feature session, summarize and archive
 reads:
-  - .specs/current.yml
+  - .specs/project.yml   # read flow.current
   - .specs/features/{slug}/requirements.md
   - .specs/features/{slug}/design.md
   - .specs/features/{slug}/tasks.md
@@ -19,7 +19,7 @@ flow:
   - Zip current session; rotate per retention
   - Aggregate verification results; write an end report under `.specs/reports/`
   - Only print concise summary to conversation (quiet mode); full logs stay in session `reports/`
-  - Update index and clear current pointer
+  - Update index and clear project.yml.flow.current pointer
 confirmations:
   - Archive and cleanup actions
 rollback:

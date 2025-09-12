@@ -1,6 +1,6 @@
 # Project Information
-name: 
-description: 
+name: codex-simpleflow
+description: 轻量、可追溯的 Codex 工作流示例与基线
 tech_stack: []
 key_dirs: []
 env:
@@ -30,8 +30,9 @@ flow:
         keep_archives: 5
       reports:
         keep_latest: 3
-flow:
   current:
     feature: null
     session_id: null
+    last_task: null
+    updated_at: null
     stage: Uninitialized
