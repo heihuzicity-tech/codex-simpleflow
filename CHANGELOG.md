@@ -3,6 +3,9 @@
 本项目遵循“精简、可恢复、会话留痕”的工作流设计。重要变更记录如下。
 
 ## [Unreleased]
+- （待定）
+
+## [2.1.0] - 2025-09-13
 - 目录迁移：将 flow 从 `.specs/flow/` 彻底迁移至 `.codex/flow/`；删除旧目录；README 与 AGENTS 全量更新至新路径。
 - 命令集：`/cc-fix`、`/cc-analyze`、`/cc-think` 升级为“正式命令”，与 `/cc-start`、`/cc-next`、`/cc-load`、`/cc-sync`、`/cc-end` 并列。
 - 安全与验证：README 新增“Safety Gates”说明；执行前守卫（禁用 `*.ps1/*.bat`）、开始前 DB 备份提示、受控 Git、结束一致性校验与归档清理、可选自动 smoke。
@@ -17,4 +20,3 @@
 
 ## [1.0.0] - 初始版本
 - 初始化仓库与基础工作流文档。
-
