@@ -60,3 +60,16 @@ This repository uses a feature‑centric specs layout under `.specs/` and places
 ## Script Types Policy
 - Prohibited: generating or committing Windows shell scripts (`*.ps1`, `*.bat`). Cross‑platform tools must use Bash (`*.sh`) or platform‑neutral languages.
 - Guards: commands should run the `guard-no-win-scripts.sh` check during prechecks and fail fast when such files appear.
+
+## Start Command (SOP)
+- Prechecks: enforce branch guard (writes allowed only on `feature/*`), run Windows script guard, validate slug (lowercase, unique), check working tree, and prompt DB backup if applicable.
+- Short Q&A: collect scope, success criteria, constraints, and non‑goals in ≤5 questions and ≤2 rounds. No writes in this phase.
+- Drafts & preview: produce drafts for `requirements.md`, `design.md`, and `tasks.md`; present preview without writing.
+- Per‑document confirmations: write each document only after explicit confirmation (atomic write per document).
+- Session & pointer: only after all three docs are written, create `sessions/<UTC_ID>/journal.md` (INIT only) and set `.specs/project.yml.flow.current` with `stage=Active`, `feature`, `session_id`, and `updated_at`.
+- Evidence: store Q&A and draft summary under `.specs/features/<slug>/reports/cc-start-qa-<ts>.md`.
+
+## State Machine Invariants
+- Before `/cc-next`: journal contains only `INIT`; `flow.current.last_task=null`.
+- Entering `/cc-next`: journal may append `WIP n` and `DONE n`; `flow.current.last_task` must be set to `n`.
+- Forbidden: any `WIP` while `stage!=Active` or `last_task=null`.

@@ -29,6 +29,20 @@ Scope: These rules apply to the entire repository for all agent work in Codex CL
 - Policies and constraints: `.codex/flow/policies.md`.
 - Command specs: `.codex/flow/commands/*.yml`.
 
+## Language
+- Preserve each rules file’s original language. English files remain English (e.g., `AGENTS.md`, `.codex/flow/policies.md`, `.codex/flow/commands/*.yml`). Any rules file originally written in Chinese should remain Chinese. Do not change a file’s language when supplementing or refining rules.
+
+## Start SOP (/cc-start)
+- Prechecks: branch guard (allow writes only on `feature/*`), Windows script guard, slug validity/uniqueness, working tree check, and DB backup prompt if applicable.
+- Short Q&A: ask up to 5 targeted questions within 1–2 rounds to clarify scope, success criteria, constraints, and non‑goals. No file writes yet.
+- Drafts & preview: produce drafts for `requirements.md`, `design.md`, and `tasks.md`; present a concise preview; do not write files in this step.
+- Per‑document confirmation & write: obtain explicit confirmation for each document, then perform an atomic write for that document. Unconfirmed docs stay as drafts.
+- Session & pointer: after all three documents are written, create `sessions/<UTC_ID>/journal.md` (INIT only) and update `.specs/project.yml.flow.current` with `{ feature, session_id, last_task: null, stage: Active, updated_at: now }`.
+- Evidence: persist the Q&A and draft summary to `.specs/features/<slug>/reports/cc-start-qa-<ts>.md`; keep conversation output concise; store long logs in reports.
+
+### State Machine
+See `.codex/flow/policies.md` for the authoritative State Machine Invariants and session/pointer rules. Commands should follow those invariants without re‑stating them here.
+
 ## Commands (formal)
 - `/cc-start`, `/cc-next`, `/cc-load`, `/cc-sync`, `/cc-end`.
 - `/cc-git`, `/cc-info`, `/cc-config`, `/cc-archive`, `/cc-server`.

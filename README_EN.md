@@ -185,12 +185,12 @@ docs/                           # Project documentation
 /cc-start user-authentication
 
 # System Behavior:
-# ✓ Generate requirements.md, design.md, tasks.md
-# ✓ Create session sessions/20250912T143052Z/
-# ✓ Initialize journal.md timeline
-# ✓ Update project.yml.flow.current pointer
-# ✓ Check database configuration, prompt for backup
-# ✓ Suggest creating feature branch
+# ✓ Run prechecks (branch guard, Windows script guard, DB backup prompt)
+# ✓ Ask up to 5 targeted questions based on the feature name (1–2 rounds, no writes)
+# ✓ Produce drafts for requirements/design/tasks and show a preview (no writes)
+# ✓ Write each document only after explicit per-document confirmation (atomic writes)
+# ✓ After all three are written, create the session and initialize journal.md (INIT only), then update flow.current (stage=Active, updated_at)
+# ✓ Save Q&A and draft summary to feature reports (cc-start-qa-<ts>.md)
 ```
 
 ### 2. Progress Task Execution

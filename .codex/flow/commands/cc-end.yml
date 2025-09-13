@@ -8,7 +8,6 @@ reads:
 writes:
   - .specs/features/{slug}/summary.md
   - .specs/archives/{slug}_{utc_id}.zip
-  - .specs/index.yml
   - .specs/features/{slug}/sessions/{utc_id}/journal.md (append closing)
 prechecks:
   - All tasks completed; design parity check passes
@@ -24,4 +23,3 @@ confirmations:
   - Archive and cleanup actions
 rollback:
   - If validation fails, stop and report gaps
-

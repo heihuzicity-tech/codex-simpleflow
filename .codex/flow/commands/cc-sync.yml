@@ -14,4 +14,3 @@ confirmations:
   - None (read-only); fixes handled via cc-fix or manual tasks
 rollback:
   - Not applicable
-

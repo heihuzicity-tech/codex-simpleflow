@@ -15,7 +15,6 @@ writes:
   - .specs/project.yml   # update flow.current (feature + session_id, last_task=null, updated_at=now)
   # Scoped mode (attach a fix task to an existing feature)
   - .specs/features/{feature}/tasks.md
-  - .specs/features/{feature}/sessions/{utc_id}/journal.md
   - .specs/features/{feature}/sessions/{utc_id}/reports/fix-*.md
 prechecks:
   - Run guard-no-win-scripts.sh (no *.ps1/*.bat)
@@ -34,7 +33,7 @@ flow:
     - Update project.yml.flow.current: { feature: fix-{slug}, session_id, last_task: null, updated_at: now }
   - If scoped:
     - Append a fix task to {feature}/tasks.md with anchors [@req.fix.*]/[@des.fix.*]
-    - Ensure an active or latest session; write a WIP entry to journal.md
+    - Do not write WIP in journal; hand off progress to `/cc-next`
   - Write a fix report under session reports (problem, impact, plan, risk, rollback, evidence)
   - Hand off implementation to /cc-next; verify via /cc-sync; close via /cc-end
 confirmations:
@@ -45,4 +44,3 @@ confirmations:
 rollback:
   - Atomic writes; abort on validation failure
   - If evidence rejected, keep tasks open and revert tentative changes
-

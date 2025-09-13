@@ -2,7 +2,6 @@ name: cc-archive
 summary: Manually archive/rotate sessions per retention rules
 reads:
   - .specs/project.yml
-  - .specs/index.yml?
 writes:
   - .specs/archives/{slug}_{utc_id}.zip
   - .specs/features/{slug}/ (rotate sessions)
@@ -14,4 +13,3 @@ confirmations:
   - Deletion of original session directories
 rollback:
   - Do not delete sources if zip failed
-

@@ -3,7 +3,15 @@
 本项目遵循“精简、可恢复、会话留痕”的工作流设计。重要变更记录如下。
 
 ## [Unreleased]
-- （待定）
+### 规则与流程完善
+- Start SOP：在 `/cc-start` 中新增前置检查、≤5 问精简问答、草案预览、逐文档确认与原子写入、全部确认后再创建会话与更新指针；记录问答与草案摘要到特性 reports；精简为单一路径，移除可选模式。
+- State Machine：明确不变量：`/cc-start` 阶段仅有 INIT；进入 `/cc-next` 才允许 WIP/DONE，并同步 `flow.current.last_task`；禁止 `stage!=Active` 或 `last_task=null` 时出现 WIP。
+- cc-next：保持最小化校验与简洁推进逻辑；确认后标记任务完成并更新进度（可选刷新指针）。
+- cc-end：保持最小化校验，归档并清空指针为初始态（实现细节由工具层处理）。
+- cc-sync：聚焦规格与代码一致性，保持只读与简洁报告。
+ - cc-fix（scoped）：不再写入 journal 的 WIP，仅向目标特性的 tasks.md 追加修复任务，由 `/cc-next` 推进。
+ - index.yml：移除各命令对 `.specs/index.yml` 的可选读取/写入描述，保持主路径最小化。
+ - 去重：将状态机不变量的权威描述集中到 `policies.md`，在其他文档仅做引用，避免重复与漂移。
 
 ## [2.1.1] - 2025-09-13
 ### 文档优化

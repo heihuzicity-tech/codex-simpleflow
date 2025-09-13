@@ -2,23 +2,34 @@ name: cc-start
 summary: Start a new feature session and scaffold specs
 reads:
   - .specs/project.yml
+  - .codex/flow/templates/requirements.md
+  - .codex/flow/templates/design.md
+  - .codex/flow/templates/tasks.md
 writes:
   - .specs/features/{slug}/requirements.md
   - .specs/features/{slug}/design.md
   - .specs/features/{slug}/tasks.md
   - .specs/features/{slug}/sessions/{utc_id}/journal.md
-  - .specs/project.yml   # update flow.current (feature + session_id, last_task=null, updated_at=now)
-  - .specs/index.yml?
+  - .specs/project.yml   # update flow.current (feature + session_id, last_task=null, stage=Active, updated_at=now)
 prechecks:
   - Ensure slug (lowercase a-z0-9-) and uniqueness
+  - Branch guard: allow writes only on a `feature/*` branch (otherwise plan-only)
+  - Guard no Windows scripts (*.ps1, *.bat)
+  - Prompt DB backup if database config detected
 flow:
-  - Ask for feature goal and constraints
-  - Generate requirements/design/tasks from templates
-  - Create new session folder and initialize journal.md
-  - Update project.yml.flow.current: { feature, session_id, last_task: null, updated_at: now }
-  - Update index.yml (last activity)
+  - Short Q&A (≤5 questions, ≤2 rounds) to clarify scope, success criteria, constraints, non-goals (no writes)
+  - Generate drafts for requirements/design/tasks from templates; present preview (no writes)
+  - On confirmation, write requirements.md (atomic)
+  - On confirmation, write design.md (atomic)
+  - On confirmation, write tasks.md (atomic)
+  - After all three documents are written, create new session folder and initialize journal.md with INIT only
+  - Update project.yml.flow.current: { feature, session_id, last_task: null, stage: Active, updated_at: now }
+  - Persist Q&A and draft summary to feature reports (cc-start-qa-<utc_id>.md)
 confirmations:
-  - Confirm generated requirements/design/tasks before writing
+  - Confirm requirements draft before writing
+  - Confirm design draft before writing
+  - Confirm tasks draft before writing
+  - Confirm session creation and pointer update
 rollback:
-  - Atomic writes; abort on validation failure
-
+  - Atomic writes per document; abort on validation failure
+  - If any confirmation is rejected, keep unconfirmed docs as drafts and do not create session/pointer (unless early-session was explicitly chosen and confirmed)

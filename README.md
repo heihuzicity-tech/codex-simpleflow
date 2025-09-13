@@ -185,12 +185,12 @@ docs/                           # 项目文档
 /cc-start user-authentication
 
 # 系统行为：
-# ✓ 生成 requirements.md, design.md, tasks.md
-# ✓ 创建会话 sessions/20250912T143052Z/
-# ✓ 初始化 journal.md 时间线
-# ✓ 更新 project.yml.flow.current 指针
-# ✓ 检查数据库配置，提示备份
-# ✓ 建议创建功能分支
+# ✓ 执行前置检查（分支守卫、Windows 脚本守卫、DB 备份提示）
+# ✓ 基于特性名称发起 ≤5 个关键问答（1–2 轮，不落盘）
+# ✓ 生成 requirements/design/tasks 草案并展示预览（不落盘）
+# ✓ 对每个文档逐一确认后分别写入（原子写入）
+# ✓ 三个文档均写入后再创建会话并初始化 journal.md（仅含 INIT），并更新 flow.current（stage=Active、updated_at）
+# ✓ 将问答与草案摘要写入特性 reports（cc-start-qa-<ts>.md）
 ```
 
 ### 2. 推进任务执行
