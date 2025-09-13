@@ -27,6 +27,11 @@ This repository uses a feature‑centric specs layout under `.specs/` and places
 - Put all evidence and logs under the session `reports/`; archive at `/cc-end`.
 - No global `.specs/reports/` directory; cross‑feature notes belong to regular docs (e.g., `AGENTS.md`/policies) or the active session.
 
+## Info Facts Policy
+- Canonical facts live in `.specs/project.yml` (e.g., `env.database`), so multiple features/sessions can share them.
+- Default to minimal facts: vendor, host/IP, port, name, user, and a short `commands[]` cheatsheet for core operations.
+- Session reports may include an optional minimal cheatsheet (10–20 lines) only when `flow.preferences.info.store_reports=true`. Avoid long narrative notes.
+
 ### Fix feature location
 - Bug‑fix features use `.specs/features/fix-<slug>/` (lowercase, `[a-z0-9-]`).
 - When a fix is tightly coupled with an existing feature, prefer adding a scoped fix task to that feature’s `tasks.md` instead of creating a new fix feature.

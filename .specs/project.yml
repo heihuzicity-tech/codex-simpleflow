@@ -24,6 +24,9 @@ flow:
       capture_logs: to-session-reports
     testing:
       auto_smoke: true
+    info:
+      store_reports: false   # 是否将 /cc-info 的简要备忘写入当前会话 reports
+      detail: minimal        # minimal | full（默认 minimal，仅记录 IP/端口/命令等关键提示）
     retention:
       sessions:
         keep_open: 1
