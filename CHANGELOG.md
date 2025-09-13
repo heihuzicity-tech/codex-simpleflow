@@ -11,7 +11,8 @@
 - cc-sync：聚焦规格与代码一致性，保持只读与简洁报告。
 - cc-fix（scoped）：不再写入 journal 的 WIP，仅向目标特性的 tasks.md 追加修复任务，由 `/cc-next` 推进。
 - index.yml：移除各命令对 `.specs/index.yml` 的可选读取/写入描述，保持主路径最小化。
- - cc-info：公共信息采用通用 `facts` 树记录于 `.specs/project.yml`（如 `facts.cheatsheets[]`），可选生成极简会话备忘（受 `flow.preferences.info` 控制）。
+- cc-info：公共信息采用通用 `facts` 树记录于 `.specs/project.yml`（如 `facts.cheatsheets[]`），可选生成极简会话备忘（受 `flow.preferences.info` 控制）。
+ - cc-info：支持通用最小结构：`facts.cheatsheets[]`、`facts.kv[]`、`facts.services[]`、`facts.commands[]`，避免与具体技术耦合；严禁存储密钥。
  - 去重：将状态机不变量的权威描述集中到 `policies.md`，在其他文档仅做引用，避免重复与漂移。
 
 ## [2.1.1] - 2025-09-13

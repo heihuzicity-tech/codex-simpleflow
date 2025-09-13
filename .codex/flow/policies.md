@@ -29,8 +29,12 @@ This repository uses a feature‑centric specs layout under `.specs/` and places
 
 ## Info Facts Policy
 - Canonical facts live in `.specs/project.yml` under a generic `facts` tree, so multiple features/sessions can share them.
-- Prefer a minimal `facts.cheatsheets[]` structure: `{ key, scope: global|feature/<slug>, updated_at, lines[] (≤10) }`.
-- `lines[]` should capture core tips only (e.g., host/IP, port, 3–6 commands). Avoid long narrative notes.
+- Minimal shapes (pick what fits):
+  - `facts.cheatsheets[]`: `{ key, scope: global|feature/<slug>, updated_at, lines[] (≤10) }`
+  - `facts.kv[]`: `{ key, value, scope, updated_at }` (string values only; do not store secrets)
+  - `facts.services[]`: `{ name, host, port, protocol?, scope, updated_at }`
+  - `facts.commands[]`: `{ key, cmd, scope, updated_at }`
+- Keep entries short and generic (IP/port, names, 3–6 commands). Avoid long narrative notes and never store credentials/tokens.
 - Session reports may include an optional minimal cheatsheet (10–20 lines) only when `flow.preferences.info.store_reports=true`.
 
 ### Fix feature location

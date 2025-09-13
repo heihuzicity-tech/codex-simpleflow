@@ -47,7 +47,9 @@ This document summarizes the rule refinements. No file’s original language was
 
 9. cc-info facts policy
    - Canonical facts are stored in `.specs/project.yml` under a generic `facts` tree (no DB‑specific schema).
-   - Prefer a minimal `facts.cheatsheets[]` shape: `{ key, scope, updated_at, lines[] (≤10) }` with core tips only (host/IP, port, a few commands).
+   - Minimal shapes: `facts.cheatsheets[]`, `facts.kv[]`, `facts.services[]`, `facts.commands[]`.
+   - Cheatsheets: `{ key, scope, updated_at, lines[] (≤10) }` with core tips only (host/IP, port, a few commands).
+   - KV: `{ key, value, scope, updated_at }` (no secrets). Services: `{ name, host, port, protocol?, scope, updated_at }`. Commands: `{ key, cmd, scope, updated_at }`.
    - Optional session cheatsheet is controlled by `flow.preferences.info.store_reports` and limited to 10–20 lines.
 
 ## Rationale

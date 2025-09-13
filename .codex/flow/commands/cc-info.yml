@@ -5,10 +5,18 @@ reads:
 writes:
   - .specs/project.yml
   - .specs/features/{slug}/sessions/{utc_id}/reports/info-*.md (optional: minimal cheatsheet if enabled)
+parameters:
+  - shape: cheatsheet|kv|service|command (optional, default: cheatsheet)
+  - scope: global|feature/<slug> (optional, default: global)
+  - key: identifier for the entry (recommended)
 flow:
   - Detect facts (safe reads) and propose a minimal schema
-  - Prompt for additions/edits with a minimal set of items (host/IP, port, service name, and a few core commands)
-  - On confirmation, update `.specs/project.yml` under a generic `facts.cheatsheets[]` entry (canonical source) with fields: `key`, `scope`, `updated_at`, and `lines[]` (≤ 10)
+  - Prompt for additions/edits using one of the minimal shapes below
+  - Cheatsheet: write to `facts.cheatsheets[]` with `{ key, scope, updated_at, lines[] (≤10) }`
+  - KV: write to `facts.kv[]` with `{ key, value, scope, updated_at }` (no secrets)
+  - Service: write to `facts.services[]` with `{ name, host, port, protocol?, scope, updated_at }`
+  - Command: write to `facts.commands[]` with `{ key, cmd, scope, updated_at }`
+  - On confirmation, update `.specs/project.yml` (canonical source)
   - If `flow.preferences.info.store_reports=true`, also write a short cheatsheet to the active session `reports/` (10–20 lines max, core tips only), otherwise skip
 confirmations:
   - Any edits to project.yml
