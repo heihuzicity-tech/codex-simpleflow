@@ -58,6 +58,9 @@ nosetests.xml
 coverage.xml
 *.cover
 
+# Local-only notes (do not commit)
+docs/NEXT_SESSION_PRIMER.md
+
 # OS
 .DS_Store
 Thumbs.db# discourage Windows script types
