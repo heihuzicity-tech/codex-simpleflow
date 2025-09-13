@@ -46,9 +46,9 @@ This document summarizes the rule refinements. No file’s original language was
    - Removed optional reads/writes of `.specs/index.yml` from command specs to keep the core path minimal.
 
 9. cc-info facts policy
-   - Canonical facts are stored in `.specs/project.yml` (e.g., under `env.database`).
-   - By default, only minimal keys are collected (vendor, host/IP, port, name, user, and a short `commands[]`).
-   - Optional session cheatsheet is controlled by `flow.preferences.info.store_reports` and is limited to 10–20 lines.
+   - Canonical facts are stored in `.specs/project.yml` under a generic `facts` tree (no DB‑specific schema).
+   - Prefer a minimal `facts.cheatsheets[]` shape: `{ key, scope, updated_at, lines[] (≤10) }` with core tips only (host/IP, port, a few commands).
+   - Optional session cheatsheet is controlled by `flow.preferences.info.store_reports` and limited to 10–20 lines.
 
 ## Rationale
 These refinements prevent speculative spec writes, enforce branch hygiene and confirmations, and keep state consistent between `journal.md` and `flow.current`, while keeping conversations concise and evidence auditable.
