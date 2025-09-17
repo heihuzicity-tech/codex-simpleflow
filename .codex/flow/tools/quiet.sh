@@ -9,15 +9,15 @@ latest_session() {
   ls -1 "$base" 2>/dev/null | sort | tail -n1
 }
 
-ensure_reports_dir() {
-  local slug="$1" sid="${2:-}" dir
-  if [[ -n "${sid:-}" && -d ".specs/features/$slug/sessions/$sid" ]]; then
-      dir=".specs/features/$slug/sessions/$sid/reports"
+resolve_session_dir() {
+  local slug="$1" sid="${2:-}" base=".specs/features/$slug/sessions"
+  if [[ -n "${sid:-}" && -d "$base/$sid" ]]; then
+    mkdir -p "$base/$sid"
+    printf '%s' "$base/$sid"
   else
-      dir=".specs/features/$slug/reports"
+    mkdir -p "$base/_pending"
+    printf '%s' "$base/_pending"
   fi
-  mkdir -p "$dir"
-  printf '%s' "$dir"
 }
 
 # Read active slug from .specs/project.yml -> flow.current.feature (best-effort, no PyYAML)
@@ -78,15 +78,15 @@ http_status() {
 }
 
 smoke() {
-  local slug="$1" port="$2" sid reports ts build_rc=1
+  local slug="$1" port="$2" sid session_dir ts build_rc=1
   sid="$(latest_session "$slug" 2>/dev/null || true)"
-  reports="$(ensure_reports_dir "$slug" "$sid")"
+  session_dir="$(resolve_session_dir "$slug" "$sid")"
   ts="$(utc_ts)"
   if [[ -d app ]]; then
-    npm --prefix app install --no-fund --no-audit >"$reports/smoke-install-$ts.log" 2>&1 || true
-    if npm --prefix app run build --silent >"$reports/smoke-build-$ts.log" 2>&1; then build_rc=0; else build_rc=$?; fi
+    npm --prefix app install --no-fund --no-audit >"$session_dir/smoke-install-$ts.log" 2>&1 || true
+    if npm --prefix app run build --silent >"$session_dir/smoke-build-$ts.log" 2>&1; then build_rc=0; else build_rc=$?; fi
   else
-    echo "app directory missing" >"$reports/smoke-build-$ts.log"
+    echo "app directory missing" >"$session_dir/smoke-build-$ts.log"
   fi
   local pv status
   if port_listen "$port"; then
@@ -95,7 +95,7 @@ smoke() {
   else
     pv="NO_LISTEN"
   fi
-  printf 'build=%s preview=%s reports=%s\n' "$([[ $build_rc -eq 0 ]] && echo SUCCESS || echo FAILED)" "$pv" "$reports"
+  printf 'build=%s preview=%s session_dir=%s\n' "$([[ $build_rc -eq 0 ]] && echo SUCCESS || echo FAILED)" "$pv" "$session_dir"
 }
 
 serve_status() {
@@ -120,7 +120,7 @@ serve_stop() {
 }
 
 usage() {
-  echo "usage: quiet.sh <smoke|serve-status|serve-stop> [--slug <slug>] [--port <port>]" >&2
+  echo "usage: quiet.sh <smoke|serve-status|serve-stop|task-state> [--slug <slug>] [--port <port>] [task-state options]" >&2
 }
 
 cmd="${1:-}"; shift || true
@@ -143,10 +143,30 @@ if [[ -z "${port:-}" ]]; then
 fi
 if [[ -z "${port:-}" ]]; then port=4173; fi
 
+task_state() {
+  local stage="" task=""
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --stage) stage="$2"; shift 2;;
+      --task) task="$2"; shift 2;;
+      *) echo "task-state 不支持的参数: $1" >&2; usage; exit 1;;
+    esac
+  done
+  if [[ -z "$stage" ]]; then
+    echo "task-state 需要 --stage 参数 (start|await|complete)" >&2
+    exit 1
+  fi
+  local args=("--stage" "$stage")
+  if [[ -n "$task" ]]; then
+    args+=("--task" "$task")
+  fi
+  python3 .codex/flow/tools/cc_next_state.py "${args[@]}"
+}
+
 case "$cmd" in
   smoke)        smoke "$slug" "$port" ;;
   serve-status) serve_status "$port" ;;
   serve-stop)   serve_stop "$port" ;;
+  task-state)   task_state "$@" ;;
   *) usage; exit 1;;
 esac
-

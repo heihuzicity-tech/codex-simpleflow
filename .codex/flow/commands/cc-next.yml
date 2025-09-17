@@ -6,21 +6,22 @@ reads:
   - .specs/features/{slug}/requirements.md
   - .specs/features/{slug}/design.md
 writes:
-  - .specs/features/{slug}/sessions/{utc_id}/journal.md
-  - .specs/features/{slug}/sessions/{utc_id}/reports/*
+  - .specs/features/{slug}/sessions/{utc_id}/session.md
   - .specs/features/{slug}/tasks.md (on confirmation)
   - .specs/project.yml (optional: refresh flow.current.updated_at, last_task)
 prechecks:
   - Ensure unfinished task exists
+  - Validate the next task currently shows 状态: 开始新任务
   - No Windows script files (*.ps1, *.bat) present (guard-no-win-scripts.sh)
 flow:
-  - Locate next task; determine active feature via project.yml.flow.current; set context from {ref} anchors
+  - Locate the next task; determine active feature via project.yml.flow.current; set context from {ref} anchors
+  - Immediately record 状态: 进行中 for the task (session.md timeline + tasks.md) and refresh flow.current.last_task
   - Implement per specs; produce build/static evidence
+  - When development output is ready for acceptance, record 状态: 等待测试 (session.md + tasks.md) with evidence pointers
   - If preferences.testing.auto_smoke=true, run smoke tests (build + preview ping for FE)
-  - Capture all logs to session reports; print concise summary only (quiet mode)
-  - Present evidence; on confirm, mark task done and update progress
-  - Optionally refresh `project.yml.flow.current` with `updated_at` and current `last_task`
+  - Present evidence; on confirm (after acceptance), mark task done: set checkbox [x], update task line to 状态: 完成, append completion entry to session.md
+  - Optionally refresh `project.yml.flow.current` with `updated_at`
 confirmations:
-  - Marking tasks [x]
+  - Acceptance of 等待测试 results before marking tasks [x]
 rollback:
-  - If evidence rejected, keep task open and revert tentative changes
+  - If evidence rejected, keep task at 状态: 等待测试 (do not tick checkbox) and revert any tentative 完成 markers

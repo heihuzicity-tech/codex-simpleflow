@@ -1,4 +1,4 @@
-﻿# CodexFlow Agent Rules (AGENTS.md)
+# CodexFlow Agent Rules (AGENTS.md)
 
 Scope: These rules apply to the entire repository for all agent work in Codex CLI.
 
@@ -18,12 +18,13 @@ Scope: These rules apply to the entire repository for all agent work in Codex CL
   - `cc-task` (if used) reads only the Progress section in `tasks.md`.
   - `cc-next` reads only the `{ref: ...}` anchors from requirements/design relevant to the active task.
   - `cc-sync` may read all three docs and compare with code evidence.
-- Checkpointing: record progress only in `.specs/features/<feature>/sessions/<UTC_ID>/journal.md`; do not use a global `checkpoints/`.
+- Checkpointing: record progress only in `.specs/features/<feature>/sessions/<UTC_ID>/session.md`; do not use a global `checkpoints/`.
+- Task lifecycle is automated: `/cc-next` writes `状态: 开始新任务 → 进行中 → 等待测试 → 完成` into tasks.md & session.md; do not hand-edit states or checkboxes.
 
 ## Single Source of Truth
 - `.specs/project.yml` (includes `flow.preferences` and `flow.current`).
 - `.specs/features/{feature}/` (requirements/design/tasks/summary).
-- `.specs/features/{feature}/sessions/{UTC_ID}/` (`journal.md` and `reports/*`).
+- `.specs/features/{feature}/sessions/{UTC_ID}/` (combined `session.md` timeline and evidence pointers).
 
 ## References
 - Policies and constraints: `.codex/flow/policies.md`.
@@ -36,18 +37,18 @@ Scope: These rules apply to the entire repository for all agent work in Codex CL
 - Prechecks: branch guard (allow writes only on `feature/*`), Windows script guard, slug validity/uniqueness, working tree check, and DB backup prompt if applicable.
 - Short Q&A: ask up to 5 targeted questions within 1–2 rounds to clarify scope, success criteria, constraints, and non‑goals. No file writes yet.
 - Drafts & preview: produce drafts for `requirements.md`, `design.md`, and `tasks.md`; present a concise preview; do not write files in this step.
-- Per‑document confirmation & write: obtain explicit confirmation for each document, then perform an atomic write for that document. Unconfirmed docs stay as drafts.
-- Session & pointer: after all three documents are written, create `sessions/<UTC_ID>/journal.md` (INIT only) and update `.specs/project.yml.flow.current` with `{ feature, session_id, last_task: null, stage: Active, updated_at: now }`.
-- Evidence: persist the Q&A and draft summary to `.specs/features/<slug>/reports/cc-start-qa-<ts>.md`; keep conversation output concise; store long logs in reports.
+- Single confirmation & write: after preview, obtain one confirmation to atomically write all three documents. Unconfirmed drafts stay pending.
+- Session & pointer: immediately create `sessions/<UTC_ID>/session.md` (INIT + kickoff summary) and update `.specs/project.yml.flow.current` with `{ feature, session_id, last_task: null, stage: Active, updated_at: now }`.
+- Evidence: capture the Q&A and supporting notes inside `session.md`; reference any large artifacts from the same session directory.
 
 ### State Machine
-See `.codex/flow/policies.md` for the authoritative State Machine Invariants and session/pointer rules. Commands should follow those invariants without re‑stating them here.
+See `.codex/flow/policies.md` for the authoritative State Machine Invariants and session/pointer rules. Commands must honor the 状态: 开始新任务 → 进行中 → 等待测试 → 完成 lifecycle enforced by those invariants; do not restate or bypass them.
 
 ## Commands (formal)
 - `/cc-start`, `/cc-next`, `/cc-load`, `/cc-sync`, `/cc-end`.
 - `/cc-git`, `/cc-info`, `/cc-config`, `/cc-archive`, `/cc-server`.
 - `/cc-fix`: Fix workflow (default creates `.specs/features/fix-<slug>/` and a session; or append a fix task to a target feature on confirmation).
-- `/cc-analyze`: Read-only analysis (does not modify specs); report is written to the active session `reports/`.
+- `/cc-analyze`: Read-only analysis (does not modify specs); summary appends to the active session `session.md`.
 - `/cc-think`: Proposal before implementation (spec edits require confirmation; may output a patch instead).
 
 ---
