@@ -48,8 +48,8 @@ Tasks: {ref: [@req.auth], [@des.jwt]} 实现JWT认证
 - **确认机制**: 所有敏感操作（勾任务、改规格、Git操作）需明确确认
 
 ### 4. 智能会话管理
-- **时间线记录**: `journal.md` 完整记录 WIP/DONE 标记
-- **证据留存**: 长日志和构建输出保存到会话 `reports/`
+- **时间线记录**: 单一 `session.md` 自动写入 INIT 及 `状态: 开始新任务 → 进行中 → 等待测试 → 完成` 标记
+- **证据留存**: 长日志可在 `session.md` 中引用同目录附件
 - **一键恢复**: `/cc-load` 自动推断下一步操作
 - **跨特性支持**: 支持同时管理多个特性开发
 
@@ -67,14 +67,14 @@ Tasks: {ref: [@req.auth], [@des.jwt]} 实现JWT认证
 | `/cc-start <feature>` | 初始化特性开发，生成规格和会话 | `/cc-start user-login` |
 | `/cc-next` | 执行下一个未完成任务，记录证据 | `/cc-next` |
 | `/cc-load` | 只读恢复会话上下文，显示下一步 | `/cc-load` |
-| `/cc-sync` | 规格-代码一致性检查，生成报告 | `/cc-sync` |
+| `/cc-sync` | 规格-代码一致性检查，输出同步摘要 | `/cc-sync` |
 | `/cc-end` | 完成校验并归档会话 | `/cc-end` |
 
 ### 分析与修复命令
 | 命令 | 功能 | 示例用法 |
 |------|------|----------|
 | `/cc-fix <slug>` | 启动缺陷修复工作流 | `/cc-fix auth-bug` |
-| `/cc-analyze --target <path>` | 生成分析报告和建议 | `/cc-analyze --target src/auth` |
+| `/cc-analyze --target <path>` | 生成分析摘要和建议 | `/cc-analyze --target src/auth` |
 | `/cc-think [v1|v2|v3]` | 深度提案分析（三个层级） | `/cc-think v2` |
 
 ### 辅助管理命令
@@ -113,12 +113,9 @@ Tasks: {ref: [@req.auth], [@des.jwt]} 实现JWT认证
 │   │   ├── summary.md            # 完成总结（/cc-end生成）
 │   │   └── sessions/             # 会话历史
 │   │       └── <UTC_ID>/         # 具体会话目录
-│   │           ├── journal.md    # 会话时间线（WIP/DONE标记）
-│   │           └── reports/      # 会话证据和日志
-│   │               ├── build-20250912T143052Z.log
-│   │               ├── test-20250912T143105Z.log
-│   │               ├── sync-20250912T143120Z.md
-│   │               └── analyze-20250912T143135Z.md
+│   │           ├── session.md    # 会话时间线（INIT + `状态: 开始新任务 → 进行中 → 等待测试 → 完成` + 附件索引）
+│   │           ├── smoke-build-20250912T143052Z.log
+│   │           └── think-20250912T143135Z.patch
 │   └── fix-<slug>/               # 修复特性（可选）
 │       └── [同上结构]
 │
@@ -152,13 +149,13 @@ Tasks: {ref: [@req.auth], [@des.jwt]} 实现JWT认证
     │   ├── design.md          # 设计模板（含占位符）
     │   ├── tasks.md           # 任务模板（含占位符）
     │   ├── summary.md         # 总结模板（含占位符）
-    │   └── journal.md         # 日志模板（含占位符）
+    │   └── session.md         # 会话模板（含占位符）
     └── tools/                 # 执行工具
         ├── quiet.sh           # 静默执行工具
         │   ├── smoke()        # 自动smoke测试
         │   ├── serve_status() # 服务状态检查
         │   ├── serve_stop()   # 服务停止
-        │   └── ...
+        │   └── task_state()   # 任务状态自动写入
         └── guard-no-win-scripts.sh  # Windows脚本守卫
 
 AGENTS.md                        # Codex CLI 适配规则
@@ -188,9 +185,9 @@ docs/                           # 项目文档
 # ✓ 执行前置检查（分支守卫、Windows 脚本守卫、DB 备份提示）
 # ✓ 基于特性名称发起 ≤5 个关键问答（1–2 轮，不落盘）
 # ✓ 生成 requirements/design/tasks 草案并展示预览（不落盘）
-# ✓ 对每个文档逐一确认后分别写入（原子写入）
-# ✓ 三个文档均写入后再创建会话并初始化 journal.md（仅含 INIT），并更新 flow.current（stage=Active、updated_at）
-# ✓ 将问答与草案摘要写入特性 reports（cc-start-qa-<ts>.md）
+# ✓ 一次确认后原子写入 requirements/design/tasks
+# ✓ 创建会话并初始化 session.md（仅含 INIT），并更新 flow.current（stage=Active、updated_at）
+# ✓ 在 session.md 中记录问答与草案摘要
 ```
 
 ### 2. 推进任务执行
@@ -198,12 +195,12 @@ docs/                           # 项目文档
 /cc-next
 
 # 系统行为：
-# ✓ 读取当前任务的 {ref} 锚点
-# ✓ 实施任务并生成证据
-# ✓ 长日志保存到 reports/ 目录
+# ✓ 自动写入任务状态：进入命令即更新为 `状态: 进行中` 并刷新 `flow.current.last_task`
+# ✓ 实施任务并生成证据，准备验收时自动切换为 `状态: 等待测试`
+# ✓ 在 session.md 中引用日志文件（存放于同目录），确保 `/cc-load` 可一键恢复
 # ✓ 可选执行 smoke 测试
-# ✓ 确认后标记任务完成
-# ✓ 更新 journal.md 时间线
+# ✓ 验收通过后写入 `状态: 完成`，勾选 tasks.md 复选框并记录完成证据
+# ✓ 全过程维护 session.md 时间线，状态缺失时命令会阻断继续
 ```
 
 ### 3. 一致性检查
@@ -213,7 +210,7 @@ docs/                           # 项目文档
 # 系统行为：
 # ✓ 提取 requirements/design 中的锚点
 # ✓ 扫描代码验证实现一致性
-# ✓ 生成详细的 sync 报告
+# ✓ 在 session.md 中追加同步摘要
 # ✓ 记录差异和建议修复
 ```
 
@@ -237,7 +234,7 @@ docs/                           # 项目文档
 # 系统行为：
 # ✓ 读取 project.yml.flow.current
 # ✓ 扫描最近会话目录
-# ✓ 解析 journal.md 的 WIP/DONE
+# ✓ 解析 session.md 的 状态记录（进行中/等待测试/完成）
 # ✓ 推断下一步操作
 # ✓ 只读展示，不修改状态
 ```

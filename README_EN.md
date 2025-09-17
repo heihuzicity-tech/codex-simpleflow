@@ -48,8 +48,8 @@ Commands execute by reading only task-relevant `{ref}` anchors, ensuring precise
 - **Confirmation Mechanisms**: All sensitive operations (task completion, spec changes, Git operations) require explicit confirmation
 
 ### 4. Intelligent Session Management
-- **Timeline Recording**: Complete WIP/DONE markers in `journal.md`
-- **Evidence Preservation**: Long logs and build outputs saved to session `reports/`
+- **Timeline Recording**: Unified `session.md` auto-writes INIT plus `Status: Start Task → In Progress → Awaiting Test → Done` markers
+- **Evidence Preservation**: Long logs referenced from the same directory alongside `session.md`
 - **One-Command Recovery**: `/cc-load` automatically infers next steps
 - **Cross-Feature Support**: Manages multiple concurrent feature developments
 
@@ -67,14 +67,14 @@ Commands execute by reading only task-relevant `{ref}` anchors, ensuring precise
 | `/cc-start <feature>` | Initialize feature development, generate specs and session | `/cc-start user-login` |
 | `/cc-next` | Execute next incomplete task, record evidence | `/cc-next` |
 | `/cc-load` | Read-only session context restoration, show next steps | `/cc-load` |
-| `/cc-sync` | Specs-code consistency check, generate reports | `/cc-sync` |
+| `/cc-sync` | Specs-code consistency check, append summary to session | `/cc-sync` |
 | `/cc-end` | Complete validation and archive session | `/cc-end` |
 
 ### Analysis & Fix Commands
 | Command | Function | Usage Example |
 |---------|----------|---------------|
 | `/cc-fix <slug>` | Start defect fix workflow | `/cc-fix auth-bug` |
-| `/cc-analyze --target <path>` | Generate analysis reports and suggestions | `/cc-analyze --target src/auth` |
+| `/cc-analyze --target <path>` | Generate analysis summary and suggestions | `/cc-analyze --target src/auth` |
 | `/cc-think [v1|v2|v3]` | Deep proposal analysis (three levels) | `/cc-think v2` |
 
 ### Auxiliary Management Commands
@@ -113,12 +113,9 @@ Commands execute by reading only task-relevant `{ref}` anchors, ensuring precise
 │   │   ├── summary.md            # Completion summary (/cc-end generated)
 │   │   └── sessions/             # Session history
 │   │       └── <UTC_ID>/         # Specific session directory
-│   │           ├── journal.md    # Session timeline (WIP/DONE markers)
-│   │           └── reports/      # Session evidence and logs
-│   │               ├── build-20250912T143052Z.log
-│   │               ├── test-20250912T143105Z.log
-│   │               ├── sync-20250912T143120Z.md
-│   │               └── analyze-20250912T143135Z.md
+│   │           ├── session.md    # Session timeline (INIT + `Status: Start Task → In Progress → Awaiting Test → Done` + attachment index)
+│   │           ├── smoke-build-20250912T143052Z.log
+│   │           └── think-20250912T143135Z.patch
 │   └── fix-<slug>/               # Fix features (optional)
 │       └── [same structure as above]
 │
@@ -152,13 +149,13 @@ Commands execute by reading only task-relevant `{ref}` anchors, ensuring precise
     │   ├── design.md          # Design template (with placeholders)
     │   ├── tasks.md           # Tasks template (with placeholders)
     │   ├── summary.md         # Summary template (with placeholders)
-    │   └── journal.md         # Journal template (with placeholders)
+    │   └── session.md         # Session template (with placeholders)
     └── tools/                 # Execution tools
         ├── quiet.sh           # Quiet execution tool
         │   ├── smoke()        # Automatic smoke testing
         │   ├── serve_status() # Service status check
         │   ├── serve_stop()   # Service stop
-        │   └── ...
+        │   └── task_state()   # Task lifecycle automation
         └── guard-no-win-scripts.sh  # Windows script guard
 
 AGENTS.md                        # Codex CLI adaptation rules
@@ -188,9 +185,9 @@ docs/                           # Project documentation
 # ✓ Run prechecks (branch guard, Windows script guard, DB backup prompt)
 # ✓ Ask up to 5 targeted questions based on the feature name (1–2 rounds, no writes)
 # ✓ Produce drafts for requirements/design/tasks and show a preview (no writes)
-# ✓ Write each document only after explicit per-document confirmation (atomic writes)
-# ✓ After all three are written, create the session and initialize journal.md (INIT only), then update flow.current (stage=Active, updated_at)
-# ✓ Save Q&A and draft summary to feature reports (cc-start-qa-<ts>.md)
+# ✓ Confirm once to atomically write requirements/design/tasks
+# ✓ Create session.md with INIT and kickoff summary, then update flow.current (stage=Active, updated_at)
+# ✓ Record Q&A and draft summary inside session.md
 ```
 
 ### 2. Progress Task Execution
@@ -198,12 +195,12 @@ docs/                           # Project documentation
 /cc-next
 
 # System Behavior:
-# ✓ Read current task's {ref} anchors
-# ✓ Implement task and generate evidence
-# ✓ Save long logs to reports/ directory
+# ✓ Auto-write task states: entering the command sets `Status: In Progress` and refreshes `flow.current.last_task`
+# ✓ Implement the task and produce evidence; when ready for review, switch to `Status: Awaiting Test`
+# ✓ Reference logs alongside session.md so `/cc-load` can fully restore context
 # ✓ Optionally execute smoke tests
-# ✓ Mark task complete after confirmation
-# ✓ Update journal.md timeline
+# ✓ After acceptance, write `Status: Done`, tick the checkbox in tasks.md, and record completion evidence
+# ✓ Maintain session.md timeline throughout; the command blocks if required states are missing
 ```
 
 ### 3. Consistency Check
@@ -213,7 +210,7 @@ docs/                           # Project documentation
 # System Behavior:
 # ✓ Extract anchors from requirements/design
 # ✓ Scan code to verify implementation consistency
-# ✓ Generate detailed sync reports
+# ✓ Append sync summary to session.md (link evidence as needed)
 # ✓ Record discrepancies and suggested fixes
 ```
 
@@ -237,7 +234,7 @@ docs/                           # Project documentation
 # System Behavior:
 # ✓ Read project.yml.flow.current
 # ✓ Scan recent session directories
-# ✓ Parse journal.md WIP/DONE markers
+# ✓ Parse session.md status markers (In Progress / Awaiting Test / Done)
 # ✓ Infer next operation
 # ✓ Read-only display, no state modification
 ```
